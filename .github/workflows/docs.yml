@@ -1,0 +1,39 @@
+name: Documentation and examples
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install documentation dependencies
+        run: python -m pip install -r requirements-docs.txt
+      - name: Check OKF and local links
+        run: python scripts/check_docs.py
+      - name: Check validator tests
+        run: python -m unittest discover -s tests -v
+  rust-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Test examples
+        run: |
+          cargo test --manifest-path examples/ports-and-adapters/Cargo.toml
+          cargo test --manifest-path examples/typestate/Cargo.toml
+      - name: Check formatting
+        run: |
+          cargo fmt --manifest-path examples/ports-and-adapters/Cargo.toml --all -- --check
+          cargo fmt --manifest-path examples/typestate/Cargo.toml --all -- --check
+      - name: Clippy
+        run: |
+          cargo clippy --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --manifest-path examples/typestate/Cargo.toml --all-targets -- -D warnings
