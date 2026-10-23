@@ -27,7 +27,7 @@ class CheckDocsTests(unittest.TestCase):
             root = Path(td)
             (root / "standard").mkdir()
             (root / "standard" / "rule.md").write_text("---\ntype: Rule\n---\n# REAS-RUST-001\n")
-            self.assertEqual(validate(root), [])
+            self.assertEqual(validate(root), ["standard/index.md: Bundle index is missing"])
     def test_broken_link(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

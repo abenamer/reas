@@ -1,4 +1,8 @@
-//! Compile-time lifecycle example.
+//! Typestate example.
+//!
+//! The state of a `Job` is a type parameter. An operation that is invalid in
+//! a state does not compile. The state parameter is bounded by the sealed
+//! trait `JobState`, so the set of states is closed (REAS-STATE-002).
 //!
 //! A running job can complete:
 //!
@@ -8,20 +12,49 @@
 //! assert_eq!(completed.id(), 1);
 //! ```
 //!
-//! A pending job cannot complete:
+//! A pending job cannot complete. `complete` is not defined for
+//! `Job<Pending>`, so this is error E0599 (no method found):
 //!
-//! ```compile_fail
+//! ```compile_fail,E0599
 //! use reas_typestate::Job;
 //! let _invalid = Job::new(1).complete();
 //! ```
+//!
+//! A type outside the sealed set is not a job state. This is error E0277
+//! (trait bound not satisfied):
+//!
+//! ```compile_fail,E0277
+//! use reas_typestate::Job;
+//! fn takes_job(_job: Job<String>) {}
+//! ```
+//!
+//! Note on evidence: stable rustdoc accepts the error code after
+//! `compile_fail` but does not check it. Only nightly rustdoc fails the test
+//! when the code differs. On stable, these tests prove that the snippet does
+//! not compile, not why.
 
 use std::marker::PhantomData;
+
+mod sealed {
+    pub trait Sealed {}
+}
+
+/// Marker trait for the states of a [`Job`]. Only this crate can implement it.
+pub trait JobState: sealed::Sealed {}
 
 pub struct Pending;
 pub struct Running;
 pub struct Completed;
 
-pub struct Job<State> {
+impl sealed::Sealed for Pending {}
+impl sealed::Sealed for Running {}
+impl sealed::Sealed for Completed {}
+
+impl JobState for Pending {}
+impl JobState for Running {}
+impl JobState for Completed {}
+
+pub struct Job<State: JobState> {
     id: u64,
     state: PhantomData<State>,
 }
@@ -51,7 +84,7 @@ impl Job<Running> {
     }
 }
 
-impl<State> Job<State> {
+impl<State: JobState> Job<State> {
     pub fn id(&self) -> u64 {
         self.id
     }

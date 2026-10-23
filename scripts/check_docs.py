@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate REAS OKF structure, rule IDs, and local Markdown links.
+"""Validate REAS OKF structure, the bundle index, rule IDs, and local Markdown links.
 
 This check does not establish ASD-STE100 compliance.
 """
@@ -108,6 +108,8 @@ def validate(root: Path) -> list[str]:
                 errors.append(f"{rel}: Link leaves repository: {uri}")
             elif not actual.exists():
                 errors.append(f"{rel}: Broken local link: {uri}")
+    if not (bundle / "index.md").is_file():
+        errors.append("standard/index.md: Bundle index is missing")
     if not seen:
         errors.append("No REAS rule IDs found")
     return errors
@@ -122,7 +124,7 @@ def main():
     if errors:
         print(f"FAIL: {len(errors)} errors")
         return 1
-    print("PASS: OKF metadata, unique rule IDs, and internal Markdown links")
+    print("PASS: OKF frontmatter, bundle index, unique rule IDs, and local Markdown links")
     print("NOT CHECKED: full STE, external URLs, technical accuracy")
     return 0
 

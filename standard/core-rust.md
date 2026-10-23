@@ -1,26 +1,29 @@
 ---
 type: Engineering Standard
 title: Core Rust
-description: Type-driven, compiler-first Rust engineering.
-tags: [rust, types, traits, ownership]
+description: Type-driven Rust engineering rules.
+tags: [rust, types, traits, ownership, async]
 ---
 
 # Core Rust
 
 ## REAS-RUST-001 — Make invariants explicit
-Use newtypes, private fields, smart constructors, `Option`, `Result`, and exhaustive enums to express domain constraints. Do not expose unchecked mutation that can invalidate a domain value.
+Use newtypes with private fields and smart constructors for domain values. Use `Option` for a value that can be absent. Use `Result` for an operation that can fail. Use a closed enum that lists every legal variant, and match on it without a wildcard arm. Do not expose a public field or a setter that can make a domain value invalid.
 
-## REAS-RUST-002 — Use zero-cost abstractions deliberately
-Prefer concrete types, iterators, borrowing, and static dispatch where they make behavior clearer. Generics, trait objects, cloning, and allocations are allowed when justified. Do not optimize away useful abstractions only to shorten compilation.
+## REAS-RUST-002 — Choose abstractions for clarity first, then check their cost
+Choose the abstraction that makes the behavior clearest to a reader. Then check its runtime cost. Generics and `impl Trait` give static dispatch and have no runtime cost. Trait objects give dynamic dispatch and usually need a heap allocation. Cloning and allocation add cost. Use a costed option when it makes the code clearer, and write the reason in a comment. Do not remove a useful abstraction to shorten compilation.
 
-## REAS-RUST-003 — Keep trait relationships coherent
-Use blanket implementations only when behavior applies universally to the bounded types. Verify coherence, orphan rules, overlap, and method ambiguity. Avoid generic trait mazes and speculative repository frameworks.
+## REAS-RUST-003 — Keep trait relationships simple
+Write a blanket implementation only when the behavior is correct for every type that meets the bounds. Design so that the orphan rule and overlapping implementations do not block a later change. Do not give a type an inherent method with the same name as a trait method. The inherent method takes priority, and the compiler does not warn. Do not build a generic repository framework before a second concrete implementation exists.
 
-## REAS-RUST-004 — Make ownership explicit
-Prefer obvious ownership and scoped borrowing. Do not default to `Arc<Mutex<T>>`. Never add `unsafe` to bypass the borrow checker. Prefer a simpler data model to fragile lifetime relationships.
+## REAS-RUST-004 — Keep ownership obvious
+Give each value one obvious owner. Borrow for short scopes. Do not use `Arc<Mutex<T>>` as a default. Never use `unsafe` to bypass the borrow checker. If lifetime annotations become hard to read, change the data model.
 
 ## REAS-RUST-005 — Handle errors explicitly
-Use typed errors and `Result`; use `?` for propagation. Reserve panics for genuine programming errors. Avoid arbitrary `unwrap` and silent default values for missing required inputs.
+Return `Result` with a typed error from each operation that can fail. Propagate with `?`. Panic only for a bug, for example an invariant that code in the same crate has already checked. Do not call `unwrap` on a value that can be `None` or `Err` at run time. When a value cannot fail, use `expect` with a message that states why. Do not substitute a default value for a required input that is missing.
 
-## REAS-RUST-006 — Compile incrementally
-Run `cargo fmt --all`, `cargo check --workspace --all-targets`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo test --workspace` as appropriate. Report only executed checks. If a remote runner is constrained, compile locally; compilation speed is not a design objective.
+## REAS-RUST-006 — Compile after each small change
+Run `cargo fmt --all`, `cargo check --workspace --all-targets`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo test --workspace` when Cargo is available. Report only the checks that ran. If the hosted build cannot run Cargo, compile locally. Compilation speed is not a design objective.
+
+## REAS-RUST-007 — Separate async work and CPU work
+Do not run a long blocking computation on an async executor thread. Move it to `spawn_blocking`, a Rayon pool, or a bounded worker pool. Do not hold a `std::sync::Mutex` guard across an `.await`. Decide how each task stops on cancellation and on shutdown, and write that decision down.

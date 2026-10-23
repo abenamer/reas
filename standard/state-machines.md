@@ -1,19 +1,19 @@
 ---
 type: Engineering Standard
 title: State machines and typestate
-description: Runtime states, typestate and transactional transitions.
+description: Runtime state enums, typestate, and guarded persisted transitions.
 tags: [rust, fsm, typestate]
 ---
 
 # State machines and typestate
 
 ## REAS-STATE-001 — Model runtime states
-Use enums for mutually exclusive workflow states. Define legal transitions explicitly and use exhaustive matching. Do not represent one state with unrelated Boolean flags.
+Use one enum for a set of mutually exclusive states. Do not encode that set with several Boolean flags. Write each legal transition as a function from one state to the next. Match on the enum without a wildcard arm.
 
 ## REAS-STATE-002 — Use typestate where it helps
-Use typestate to prevent invalid compile-time operations, including staged construction and resource initialization. Keep type parameters understandable. Prefer a runtime enum for externally loaded or persisted state.
+Use typestate to reject invalid operations at compile time, for example a build step called out of order or a resource used before initialization. Bound the state parameter with a sealed trait so the set of states is closed. Keep the number of state parameters small. Use a runtime enum when the state comes from a file, a database, or a network. The compiler cannot know that state.
 
-## REAS-STATE-003 — Protect persisted transitions
-Enforce concurrent transitions with atomic database updates or transactions. Typestate alone cannot prevent stale reads or races.
+## REAS-STATE-003 — Guard persisted transitions
+A persisted state can change between a read and a write. Guard each transition with a conditional update, for example `UPDATE ... WHERE state = $expected`, or with a row lock, for example `SELECT ... FOR UPDATE`. Typestate alone cannot prevent a stale read or a lost update.
 
 See the [typestate example](../examples/typestate/).
