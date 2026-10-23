@@ -2,7 +2,7 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.3.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.4.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
 
 ## Read the standard
 
@@ -24,9 +24,12 @@ For AI coding agents, use [CLAUDE.md](CLAUDE.md) or [AGENTS.md](AGENTS.md).
 
 Choose abstractions for clarity first, then check their runtime cost. Do not make compilation speed the goal. Compile locally if the hosted build cannot run Cargo.
 
-Use ports and adapters for public or human-maintained systems. Human-maintained means that people read, change, and review the code. Keep the concrete adapter easy to locate. For private projects, ask four questions before you select the architecture.
+Use ports and adapters for public or human-maintained applications.
+Keep the concrete adapter easy to locate.
+For private projects, use [REAS-ARCH-003](standard/ports-and-adapters.md#reas-arch-003) to select the architecture and record exceptions.
 
-Use ASD-STE100, Issue 9, as the **target** writing standard. Keep project knowledge in an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) bundle. **Full STE compliance has not been verified.**
+Use ASD-STE100, Issue 9, as the **target** writing standard. Keep project knowledge in an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) bundle. **The language review does not establish full STE compliance.**
+See the [review scope and open findings](standard/ste-review.md).
 
 ## Check the documentation
 
@@ -38,9 +41,13 @@ python scripts/check_docs.py
 python -m unittest discover -s tests -v
 ```
 
-The checker reads local files. It does not verify external URLs or the full ASD-STE100 vocabulary. See [the self-audit](standard/self-audit.md).
+The checker validates the REAS frontmatter profile, index reachability, rule declarations, local destinations, and Markdown fragments.
+See its [supported syntax and limits](standard/checker.md).
+It does not establish full OKF or ASD-STE100 compliance.
 
-The [examples](examples/README.md) are separate small Cargo packages. GitHub Actions runs their tests, Clippy, and rustfmt. The [self-audit](standard/self-audit.md) records the last passing run.
+The [examples](examples/README.md) are separate Cargo packages.
+GitHub Actions runs Cargo checks, tests, Clippy, formatting checks, and nightly diagnostic-code doctests.
+The [self-audit](standard/self-audit.md) identifies the code revision verified by each cited run.
 
 ## Status and contribution
 

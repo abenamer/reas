@@ -1,11 +1,17 @@
 # Claude instructions
 
-Start at [standard/index.md](standard/index.md). Follow relevant rules, not every rule by default.
+Start at [standard/index.md](standard/index.md).
+Apply the rules for the current task.
 
 1. Identify domain invariants and legal states.
-2. For public or human-maintained code, prefer explicit ports, named concrete adapters, and transparent composition-root wiring.
-3. For private projects, ask the four questions in REAS-ARCH-003 before recommending ports and adapters: who maintains the code, which external systems it uses, how long it must run, and how likely the boundaries are to change.
-4. Prefer idiomatic Rust and compiler safety to faster compilation. Use local compilation if the hosted build cannot run Cargo.
-5. Compile after each small change. Run `cargo fmt`, `cargo check`, `cargo clippy`, and `cargo test` when available.
-6. Update [OKF knowledge](standard/documentation.md), use [project terminology](standard/terminology.md), and target ASD-STE100 Issue 9.
-7. Run `python scripts/check_docs.py`. Never claim verified STE compliance or passing tests without evidence.
+2. Use visible ports, named adapters, and one composition root for each executable.
+3. For private projects, use [REAS-ARCH-003](standard/ports-and-adapters.md#reas-arch-003) before you select the architecture.
+4. Record the project service life, not the duration of one execution.
+5. Select idiomatic Rust and compiler safety before compilation speed.
+6. If the hosted build cannot run Cargo, compile locally.
+7. Run `cargo fmt`, `cargo check`, `cargo clippy`, and `cargo test` after each implementation step.
+8. Update [project documentation](standard/documentation.md) with the code.
+9. Use the [terminology table](standard/terminology.md).
+10. Run `python scripts/check_docs.py` and `python -m unittest discover -s tests -v`.
+11. Record the ASD-STE100 Issue 9 review separately from structural checks.
+12. Do not claim passing tests or full language compliance without evidence.

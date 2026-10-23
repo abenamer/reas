@@ -1,49 +1,111 @@
 ---
 type: Technical Reference
 title: REAS terminology
-description: Project-specific technical terms for consistent documentation.
+description: Software terms with a specific meaning in REAS.
 tags: [terminology, rust, ste]
 ---
 
-# REAS technical terminology
+# REAS terminology
 
-These are project-specific technical terms. They are not a reproduction of the ASD-STE100 approved dictionary. A reviewer must check terms against the official issue before claiming compliance.
+This table gives the meanings of terms that affect a REAS rule.
+It is not the ASD-STE100 dictionary.
+The terms use established software meanings, with explicit REAS conventions where necessary.
+The STE language review must examine their use in context.
 
-Rules in this standard use these terms with these meanings. When a rule uses a term that is not in this table, add the term here.
+## Technical nouns
 
 | Term | Meaning |
 | --- | --- |
-| Adapter | Concrete type that translates between an external system and the application. An inbound adapter calls a use case. An outbound adapter implements a port. |
-| Application use case | Operation that coordinates domain behavior and the ports it needs. |
-| Blanket implementation | Trait implementation for every type that meets its bounds, for example `impl<T: Display> Describe for T`. |
-| Borrow | Shared (`&T`) or exclusive (`&mut T`) reference to a value. A borrow does not transfer ownership. |
-| Cargo | Standard Rust build and package tool. |
-| Coherence | Compiler rule that permits at most one implementation of a trait for a type. The orphan rule is part of coherence. |
-| Composition root | The one place that constructs adapters and use cases and connects them. In a binary crate this is `main` or a function that `main` calls. |
-| Crate | Rust unit of compilation and linking. |
-| Domain | Types, invariants, and rules that do not depend on infrastructure. |
-| Dynamic dispatch | Method selection at run time through a trait object. |
-| Finite-state machine | A finite set of states, exactly one current state, and a defined set of permitted transitions. |
-| Forwarding layer | A type or function that only calls another with the same arguments and adds no behavior. |
-| Hexagonal architecture | Architecture that separates the application core from adapters through ports. REAS uses "ports and adapters" for the same idea. |
-| Hosted build | A build that runs on a machine the developer does not control, for example a CI runner or an agent sandbox. |
-| Human-maintained code | Code that people read, change, and review. REAS contrasts it with code that only an automated agent maintains. |
-| Inbound adapter | Adapter that receives input from outside the application and calls a use case. Examples: an HTTP handler, a CLI command. |
-| Lifetime | A named region of code for which a reference is valid. The borrow checker verifies that each use of the reference is inside that region. A lifetime is a generic parameter, not a runtime value. |
-| Newtype | Distinct type that wraps one other type to give it a separate meaning, for example `struct TeamId(u32)`. |
-| OKF | Open Knowledge Format, a convention for linked Markdown knowledge. |
-| OKF concept | One Markdown file in the OKF bundle. Its YAML frontmatter includes `type`. |
-| Orphan rule | Compiler rule: a crate can implement a trait for a type only if the crate defines the trait or the type. |
-| Outbound adapter | Adapter that implements a port and calls an external system. Examples: a PostgreSQL repository, an HTTP client. |
-| Ownership | The rule that each value has exactly one owner. When the owner goes out of scope and the value was not moved out, Rust drops the value. |
-| Pure function | Function whose result depends only on its arguments and that has no side effects. |
-| Port | Trait that the application defines for a dependency it needs. An outbound adapter implements the port. REAS uses "port" for the outbound side only. For the inbound side, REAS uses "use case". |
-| Sealed trait | Public trait with a private supertrait, so only the defining crate can implement it. It closes the set of implementing types. |
-| Smart constructor | Function that checks its input and returns a valid domain value or an error. The type's fields are private, so the smart constructor is the only way to make the value. |
-| SQLx | Async Rust SQL library. It can check queries against a database at compile time. |
-| Static dispatch | Method selection at compile time through generics or `impl Trait`. The compiler makes one copy of the code for each concrete type. |
-| Test double | Implementation of a port that a test controls, for example an in-memory repository or a stub HTTP client. |
-| Trait object | A value of type `dyn Trait`. It has no fixed size, so it always lives behind a pointer such as `Box<dyn Trait>` or `&dyn Trait`. Calls through it use dynamic dispatch. |
-| Typed error | An error enum or struct that the caller can match on. `Box<dyn Error>` and `anyhow::Error` are not typed errors in REAS. |
-| Typestate | Encoding the state of a value in its type. An operation that is invalid in a state does not compile. |
-| Zero-cost abstraction | Abstraction that has no additional runtime cost relative to equivalent lower-level code. The term says nothing about readability or compile time. |
+| Adapter | Code that converts between an external interface and the application. An adapter can be a function, module, or concrete type. |
+| Aliasing | Access to the same memory through more than one reference or pointer. Rust places conditions on such access. |
+| Application use case | An application operation that coordinates domain behavior and ports. REAS also calls this a use case. |
+| Async executor | A runtime component that polls futures and schedules tasks. |
+| Authentication | Establishment of a caller's identity. |
+| Authorization | A decision that controls a caller's access to an operation. |
+| Blanket implementation | A trait implementation that covers all types in its stated bounds, for example `impl<T: Display> Describe for T`. |
+| Blocking work | Work that occupies an executor thread without returning control to the executor. This includes blocking I/O and CPU-intensive work. |
+| Borrow | Temporary access to a value through a shared or exclusive reference. A borrow does not transfer ownership of the value. |
+| Cancellation | A request or mechanism to stop work before completion. Each task implementation supplies its cancellation behavior. |
+| Cargo | The Rust package and build tool. A Cargo package can contain more than one crate. |
+| Coherence | Rules that reject overlapping trait implementations and implementations that fail the orphan rules. Trait arguments are part of the implementation identity. |
+| Composition root | Code that constructs adapters and connects them to use cases. Each executable has one composition root. |
+| Conditional update | A database update with a condition on the expected stored state or version. The caller must examine the affected-row count. |
+| Crate | A Rust compilation unit, such as a library or binary target. |
+| Database constraint | A database rule for stored values, such as a unique key, foreign key, or check constraint. |
+| Domain | Types, invariants, and business rules that do not depend on infrastructure. |
+| Dyn-compatible trait | A trait that can serve as the base trait of a trait object under Rust's dyn-compatibility rules. |
+| Dynamic dispatch | Selection of a call target at run time. Trait-object calls use a vtable for this selection. |
+| Endpoint | An external entry point to an application, such as an HTTP route. |
+| Enum | A Rust type with a declared set of variants. Each value has one variant. |
+| Forwarding layer | Code that only delegates a call and adds no separate responsibility. A declared application boundary can delegate directly. |
+| Hosted build | A build in a CI service or remote development environment. |
+| Human-maintained code | Code that persons read, change, and review. REAS-ARCH-003 describes architecture exceptions for private applications. |
+| Idempotency | The property that a repeated operation has the same intended effect as one execution. |
+| Inbound adapter | Code that receives external input and calls a use case. Examples include an HTTP handler and a CLI command function. |
+| Inherent method | A method declared in an `impl Type` block, rather than an implementation of a trait. |
+| Invariant | A condition that a valid domain value or operation must satisfy. |
+| Lifetime | A region for which a reference must remain valid. Rust can infer lifetimes. A lifetime has no runtime representation. |
+| Lifetime parameter | A generic parameter, such as `'a`, that expresses a lifetime relationship in a type or function signature. |
+| Lost update | A write that replaces another writer's change without detecting that change. |
+| Migration | A versioned change to a database schema. |
+| Newtype | A new type that wraps a different type, for example `struct TeamId(u32)`. |
+| Non-exhaustive enum | An enum with a declaration that permits future variants without a breaking API change. Downstream matches must include an unknown-case arm. |
+| Offline query metadata | SQLx data in `.sqlx/` that lets checked-query macros compile without a live database. It does not prove migration consistency. |
+| OKF concept | A non-reserved Markdown document in an OKF knowledge bundle. Its frontmatter includes a non-empty `type` string. |
+| OKF knowledge bundle | A directory of linked Markdown documents that follows Open Knowledge Format. In this repository, the bundle is `standard/`. |
+| Orphan rules | Restrictions on trait implementations across crates. For a foreign trait, a local type must occur in `Self` or a trait argument. Other restrictions apply to uncovered type parameters before the first local type. |
+| Outbound adapter | An implementation of a port for an external dependency. An in-memory adapter can substitute for that dependency in tests. |
+| Ownership | Rules for moves and responsibility for dropping values. `Rc` and `Arc` provide shared ownership of an allocation. |
+| Parameterized query | A SQL query that receives data values separately from its SQL text. Parameters do not substitute SQL identifiers. |
+| Port | A trait that the application declares for a dependency. REAS uses port for the outbound side and use case for the inbound side. |
+| Ports and adapters | Architecture that separates application behavior from external systems through explicit boundaries. Hexagonal architecture is an established alias. |
+| Property test | A test of a stated invariant with generated inputs. |
+| Pure function | A function with no side effects. The same arguments give the same result. |
+| Row lock | A database lock that coordinates access to a row until the transaction ends. |
+| Schema | The database structure, including tables, columns, types, and constraints. |
+| Sealed trait | A public trait that downstream crates cannot implement. One pattern uses a supertrait in a private module, without implementations for external types. |
+| Shutdown | The process that stops new work before the application exits. It completes, cancels, or discards existing work. |
+| Simulation | A test that executes a model with a sequence of events. A recorded random seed can help reproduce a failure. |
+| Smart constructor | A function that validates input before it returns a domain value. All safe public construction paths must preserve the same invariants. |
+| SQLx | An async Rust SQL library. Its checked-query macros can use a database or saved offline metadata at compile time. |
+| Stale read | A read with a result that does not match the state used by the next operation. |
+| State machine | A finite set of states and permitted transitions, with exactly one current state. Finite-state machine is an established alias. |
+| Static dispatch | A call with a target that the compiler selects at compile time. Monomorphization specializes generic code for concrete instantiations. |
+| Test double | An implementation that a test controls, such as a failing repository or an in-memory adapter. |
+| Trait | A Rust interface of associated functions, types, or constants. A type can implement the trait. |
+| Trait object | A dynamically sized value accessed through a dyn-compatible base trait, with optional auto-trait and lifetime bounds. Its pointers include dispatch metadata. |
+| Transaction | A database boundary for operations that must commit together or roll back together. A local transaction does not include remote side effects. |
+| Typed error | An error struct or enum with variants or fields that the caller can examine. REAS excludes type-erased `Box<dyn Error>` and `anyhow::Error`. |
+| Typestate | Representation of a value's state in its type. State-specific APIs can reject invalid operations at compile time. |
+| Variant | One case of an enum, optionally with associated data. |
+| Wildcard arm | A match arm with `_` that accepts all remaining cases. |
+| YAML frontmatter | A YAML metadata block between `---` delimiters at the start of a Markdown document. |
+| Zero-cost abstraction | An abstraction with no additional runtime cost compared with equivalent lower-level code. The term does not describe readability or compilation time. |
+
+Ownership does not guarantee execution of all destructors.
+For example, `ManuallyDrop` suppresses automatic destruction of its contents.
+Process termination can also skip destructors.
+The Rust Reference states the complete drop and trait-implementation rules.
+
+## Technical verbs
+
+These terms describe software operations.
+The list records their intended meaning; it does not establish STE approval in every sentence.
+
+| Verb | Software meaning |
+| --- | --- |
+| Allocate | Obtain storage for a value. |
+| Borrow | Create a reference without moving ownership of the referenced value. |
+| Compile | Translate source code and perform the compiler's required checks. |
+| Deserialize | Convert an external data representation into program values. |
+| Dispatch | Select and invoke an implementation for a call. |
+| Drop | Perform Rust's destruction operation for a value. |
+| Implement | Supply the associated items of a trait for a type. |
+| Instantiate | Substitute concrete arguments into a generic definition. |
+| Monomorphize | Specialize generic code for concrete type and const arguments during compilation. |
+| Propagate | Return an operation's error through its caller instead of handling it there. |
+| Serialize | Convert program values into an external data representation. |
+| Validate | Test data or structure against specified constraints. |
+
+Use ports and adapters, state machine, and application use case as the preferred terms in new rule text.
+Use established aliases only to explain terminology or preserve a historical reference.

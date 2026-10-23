@@ -24,16 +24,30 @@ jobs:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.99.1
           components: clippy, rustfmt
+      - name: Check examples
+        run: |
+          cargo check --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets
+          cargo check --locked --manifest-path examples/typestate/Cargo.toml --all-targets
       - name: Test examples
         run: |
-          cargo test --manifest-path examples/ports-and-adapters/Cargo.toml
-          cargo test --manifest-path examples/typestate/Cargo.toml
+          cargo test --locked --manifest-path examples/ports-and-adapters/Cargo.toml
+          cargo test --locked --manifest-path examples/typestate/Cargo.toml
       - name: Check formatting
         run: |
           cargo fmt --manifest-path examples/ports-and-adapters/Cargo.toml --all -- --check
           cargo fmt --manifest-path examples/typestate/Cargo.toml --all -- --check
       - name: Clippy
         run: |
-          cargo clippy --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets -- -D warnings
-          cargo clippy --manifest-path examples/typestate/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path examples/typestate/Cargo.toml --all-targets -- -D warnings
+  nightly-doctests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-10-23
+      - name: Test expected diagnostic codes
+        run: cargo +nightly-2026-10-23 test --locked --manifest-path examples/typestate/Cargo.toml --doc

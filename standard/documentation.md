@@ -1,12 +1,12 @@
 ---
 type: Engineering Standard
 title: Documentation and knowledge structure
-description: ASD-STE100 writing guidance and OKF v0.2 organization.
+description: ASD-STE100 language review and the REAS OKF profile.
 tags: [documentation, asd-ste100, okf]
 sources:
   - id: ste
-    resource: https://www.asd-ste100.org/
-    title: ASD-STE100 official site
+    resource: https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf
+    title: ASD-STE100 Issue 9
   - id: okf
     resource: https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md
     title: OKF v0.2 specification
@@ -14,17 +14,62 @@ sources:
 
 # Documentation and knowledge structure
 
-## REAS-DOC-001 — Target ASD-STE100
-Write procedural and reference documentation with controlled terminology, direct steps, and clear grammar. Consult the official Issue 9 rules and approved vocabulary before you claim compliance. Clear language alone does not establish compliance.
+<a id="reas-doc-001"></a>
+## REAS-DOC-001: Target ASD-STE100
 
-## REAS-DOC-002 — Keep an OKF knowledge bundle
-Use Markdown and valid YAML frontmatter for each concept under `standard/`. Each concept requires `type`. Keep an `index.md` at the bundle root with `okf_version: "0.2"` and a link to each concept. Keep local links valid, sources attributable, and `generated` and `verified` metadata factual.
+Write procedures and reference text with the same terms and direct sentences.
+Give one instruction in each procedural sentence.
+Put conditions before the related instruction.
+Keep explanations separate from instructions.
+Use the official Issue 9 rules and dictionary for the language review.
+Record its scope, findings, exceptions, and result in the [STE review record](ste-review.md).
 
-## REAS-DOC-003 — Define technical terms
-Use the [project terminology list](terminology.md) for Rust and architecture terms. When a rule uses a term that the list does not define, add the term. Write code identifiers, commands, and paths exactly as they appear in the code. Do not paraphrase or translate them.
+Do not report full compliance from sentence length or a word list alone.
+Do not change a code identifier to satisfy a language preference.
+A technical correction and a language correction are separate review steps.
 
-## REAS-DOC-004 — Document while implementing
-Update domain, architecture, API, operation, and decision documents in the same change as the code. Keep instructions reproducible. Provide prerequisites, ordered steps, expected results, and recovery steps where needed.
+<a id="reas-doc-002"></a>
+## REAS-DOC-002: Keep an OKF knowledge bundle
 
-## REAS-DOC-005 — Validate independently
-Run the structural checks: OKF frontmatter, the bundle index, unique rule identifiers, and local links. Record the STE language review separately. Structural validity does not prove technical accuracy or STE compliance.
+Use `standard/` as the knowledge bundle.
+Give each concept valid YAML frontmatter with a non-empty `type` string.
+Keep `index.md` at the bundle root with `okf_version: "0.2"`.
+Make each concept reachable from that index through local Markdown links.
+Use `index.md` and `log.md` only for their reserved purposes.
+
+In bundle documents, resolve a path that starts with `/` against the bundle root.
+In repository documents outside the bundle, resolve that path against the repository root.
+Keep local link paths and heading fragments valid.
+Attribute external sources.
+For `generated` and `verified` events, include an actor in `by` and a timestamp with a UTC offset in `at`.
+Make sure that the evidence supports each metadata claim.
+
+<a id="reas-doc-003"></a>
+## REAS-DOC-003: Use consistent technical terms
+
+Use the [terminology table](terminology.md) for terms with a Rust-specific or REAS-specific meaning.
+Add a term when its meaning could change the interpretation of a rule.
+Do not copy the general STE dictionary into the table.
+Keep technical verbs and technical nouns in different tables.
+Use established software terms instead of invented synonyms.
+Write code identifiers, commands, and paths exactly as they appear in the code.
+
+Keep each rule identifier bound to the same requirement.
+Follow the [identifier policy](rule-identifiers.md) for historical references and retired rules.
+
+<a id="reas-doc-004"></a>
+## REAS-DOC-004: Update documentation with the code
+
+Update domain, architecture, API, operation, and decision documents in the same change as the code.
+Make instructions reproducible.
+Give prerequisites, ordered steps, and expected results.
+For a procedure that changes persistent state, give recovery steps.
+Also give recovery steps when a failure can stop a procedure between its steps.
+
+<a id="reas-doc-005"></a>
+## REAS-DOC-005: Validate structure and language separately
+
+Run the documentation checker and its tests.
+The [checker reference](checker.md) states the supported syntax and validation limits.
+Keep different records for the technical review and the STE language review.
+Do not use structural validity as proof of technical accuracy or STE compliance.

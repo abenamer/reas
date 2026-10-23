@@ -28,9 +28,18 @@
 //! fn takes_job(_job: Job<String>) {}
 //! ```
 //!
+//! A downstream crate cannot add a state by implementing `JobState`:
+//!
+//! ```compile_fail,E0277
+//! use reas_typestate::JobState;
+//! struct ExternalState;
+//! impl JobState for ExternalState {}
+//! ```
+//!
 //! Note on evidence: stable rustdoc accepts the error code after
 //! `compile_fail` but does not check it. Only nightly rustdoc fails the test
-//! when the code differs. On stable, these tests prove that the snippet does
+//! when an expected error code is absent. Extra diagnostics can also occur.
+//! On stable, these tests prove that the snippet does
 //! not compile, not why.
 
 use std::marker::PhantomData;
@@ -92,7 +101,19 @@ impl<State: JobState> Job<State> {
 
 #[cfg(test)]
 mod tests {
-    use super::Job;
+    use super::{Completed, Job, Running};
+
+    #[test]
+    fn start_preserves_the_id() {
+        let running: Job<Running> = Job::new(123).start();
+        assert_eq!(running.id(), 123);
+    }
+
+    #[test]
+    fn complete_preserves_the_id() {
+        let completed: Job<Completed> = Job::new(123).start().complete();
+        assert_eq!(completed.id(), 123);
+    }
 
     #[test]
     fn a_running_job_can_complete() {
