@@ -15,16 +15,16 @@ sources:
 # Documentation and knowledge structure
 
 ## REAS-DOC-001 — Target ASD-STE100
-Write procedural and reference documentation with controlled terminology, direct steps, and clear grammar. Consult the official Issue 9 rules and approved vocabulary for compliance. Clear language alone does not establish compliance.
+Write procedural and reference documentation with controlled terminology, direct steps, and clear grammar. Consult the official Issue 9 rules and approved vocabulary before you claim compliance. Clear language alone does not establish compliance.
 
 ## REAS-DOC-002 — Keep an OKF knowledge bundle
-Use Markdown and valid YAML frontmatter for concept files under `standard/`. Every concept requires `type`. Maintain a navigable `index.md` with `okf_version: "0.2"`. Keep local links valid, sources attributable, and generated or verified metadata factual.
+Use Markdown and valid YAML frontmatter for each concept under `standard/`. Each concept requires `type`. Keep an `index.md` at the bundle root with `okf_version: "0.2"` and a link to each concept. Keep local links valid, sources attributable, and `generated` and `verified` metadata factual.
 
 ## REAS-DOC-003 — Define technical terms
-Use the [project terminology list](terminology.md) for precise Rust and architecture terms. Keep code identifiers, commands, and paths unchanged. Do not replace precise technical terms with inaccurate synonyms.
+Use the [project terminology list](terminology.md) for Rust and architecture terms. When a rule uses a term that the list does not define, add the term. Write code identifiers, commands, and paths exactly as they appear in the code. Do not paraphrase or translate them.
 
 ## REAS-DOC-004 — Document while implementing
-Update domain, architecture, API, operation, and decision documents with the relevant code change. Keep instructions reproducible. Provide prerequisites, ordered steps, expected results, and recovery instructions where needed.
+Update domain, architecture, API, operation, and decision documents in the same change as the code. Keep instructions reproducible. Provide prerequisites, ordered steps, expected results, and recovery steps where needed.
 
 ## REAS-DOC-005 — Validate independently
-Run structural OKF, metadata, rule identifier, and link checks. Record STE language review separately. Automated structural validity does not prove technical accuracy or full STE compliance.
+Run the structural checks: OKF frontmatter, the bundle index, unique rule identifiers, and local links. Record the STE language review separately. Structural validity does not prove technical accuracy or STE compliance.
