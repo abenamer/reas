@@ -45,13 +45,14 @@ For `generated` and `verified` events, include an actor in `by` and a timestamp 
 Make sure that the evidence supports each metadata claim.
 
 <a id="reas-doc-003"></a>
-## REAS-DOC-003: Use consistent technical terms
+## REAS-DOC-003: Use the same technical terms
 
 Use the [terminology table](terminology.md) for terms with a Rust-specific or REAS-specific meaning.
 Add a term when its meaning could change the interpretation of a rule.
 Do not copy the general STE dictionary into the table.
 Keep technical verbs and technical nouns in different tables.
-Use established software terms instead of invented synonyms.
+Use established software terms.
+Do not give one concept two different names without an explicit alias entry.
 Write code identifiers, commands, and paths exactly as they appear in the code.
 
 Keep each rule identifier bound to the same requirement.
@@ -67,7 +68,7 @@ For a procedure that changes persistent state, give recovery steps.
 Also give recovery steps when a failure can stop a procedure between its steps.
 
 <a id="reas-doc-005"></a>
-## REAS-DOC-005: Validate structure and language separately
+## REAS-DOC-005: Use different checks for structure and language
 
 Run the documentation checker and its tests.
 The [checker reference](checker.md) states the supported syntax and validation limits.

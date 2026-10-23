@@ -28,7 +28,7 @@ Do not add a forwarding layer without a different responsibility.
 
 Keep frameworks, database drivers, transports, and deployment tools out of domain code.
 Examples include Axum, SQLx, HTTP, and Docker.
-Let application code declare the ports that it needs.
+Declare the necessary ports in application code.
 Use outbound adapters to implement those ports.
 Use inbound adapters to convert external input for application use cases.
 
@@ -84,7 +84,7 @@ Make sure that the port is dyn-compatible before you use a trait object.
 For a statically dispatched async port, use native `async fn` or an explicit future return type.
 Record the `Send` requirement for returned futures.
 For a dynamically dispatched async port, use an explicit boxed future with the necessary lifetime and thread bounds.
-Record any macro that supplies this representation.
+If a macro supplies this representation, record its name.
 
 The [ports and adapters example](../examples/ports-and-adapters/) uses a synchronous port.
 It includes a CLI inbound adapter, one use case, and an in-memory outbound adapter.

@@ -24,7 +24,7 @@ Use typestate when operation order or resource initialization is an invariant.
 Expose an operation only on the state types that permit it.
 Bound the state parameter with a sealed trait when downstream crates must not add states.
 Use one type parameter for each independent state dimension.
-If the dimensions are not independent, use one state type or runtime enum instead.
+If the dimensions are not independent, use one state type or runtime enum.
 
 Validate state from a file, database, or network at run time.
 Use a runtime enum to select the state-specific operation.

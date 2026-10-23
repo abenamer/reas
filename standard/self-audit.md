@@ -7,7 +7,7 @@ tags: [quality, documentation, audit]
 
 # REAS self-audit
 
-**Current revision: Local checks passed. Remote CI evidence will be recorded after execution.**
+**Recorded validation: Actions run 11 passed for implementation commit `d746f9a`.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
@@ -52,7 +52,20 @@ The remote evidence section must identify a committed revision before a release.
 
 ## Remote evidence for this revision
 
-Not run yet. This section will identify the implementation commit and successful workflow jobs after execution.
+[Actions run 11](https://github.com/abenamer/reas/actions/runs/39995381881) passed on 2026-10-23.
+Its source commit is `d746f9adae750e8810a57652878cea83dc465d7b` on `codex/reas-precision-ste-review`.
+The job logs were inspected after execution.
+
+| Job | Verified result |
+| --- | --- |
+| [docs](https://github.com/abenamer/reas/actions/runs/39995381881/job/120557440061) | The structural checker and all 36 Python test methods passed. |
+| [rust-examples](https://github.com/abenamer/reas/actions/runs/39995381881/job/120557440283) | Rust 1.99.1 passed Cargo check, tests, formatting, and Clippy for both packages. Adapter tests: 12 passed. Typestate tests: three unit tests and four doctests passed. |
+| [nightly-doctests](https://github.com/abenamer/reas/actions/runs/39995381881/job/120557440532) | Rust nightly-2026-10-23 passed four doctests. Three compile-fail tests asserted expected diagnostic codes. |
+
+Run 11 verifies the files at that commit, not subsequent edits.
+The follow-up audit and wording edits do not change the checker, tests, example code, lockfiles, or workflow.
+Their structural validation ran locally again.
+Use the pull request checks for the results of later committed text revisions.
 
 ## Limits
 

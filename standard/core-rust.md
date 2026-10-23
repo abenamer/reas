@@ -53,7 +53,7 @@ Do not build a generic repository framework before a second concrete implementat
 Do not give an inherent method the same name as a trait method on that type.
 For the same candidate receiver type, Rust searches inherent methods before trait methods.
 Automatic borrowing and dereferencing affect the candidate order.
-A trait method can therefore take priority.
+A trait method can have priority.
 
 <a id="reas-rust-004"></a>
 ## REAS-RUST-004: Make ownership explicit
@@ -79,9 +79,9 @@ Do not return success after a failure.
 For a CLI program, return a failure exit status when the command fails.
 
 Panic only for a bug.
-For example, an invariant that this crate already established can indicate a bug if it becomes false.
+For example, an invariant violation after validation can be a bug.
 Do not call `unwrap` when `None` or `Err` can occur.
-When failure is impossible at that point, use `expect` with the reason.
+When failure is not possible at that point, use `expect` with the reason.
 Do not substitute a default for a missing required input.
 
 <a id="reas-rust-006"></a>

@@ -28,7 +28,7 @@ Add a compile-fail test for an attempted downstream implementation of each seale
 Report a check as passed only when execution evidence shows that result.
 Report passed, failed, and not run as separate outcomes.
 For each passed check, record the date and commit or immutable workflow run.
-For evidence from another environment, identify the source and the commands that ran.
+For evidence from a different environment, identify the source and the commands that ran.
 Do not apply a passing result to code that changed after that execution.
 
 <a id="reas-sec-001"></a>

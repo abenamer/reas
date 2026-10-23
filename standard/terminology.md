@@ -46,7 +46,7 @@ The STE language review must examine their use in context.
 | Invariant | A condition that a valid domain value or operation must satisfy. |
 | Lifetime | A region for which a reference must remain valid. Rust can infer lifetimes. A lifetime has no runtime representation. |
 | Lifetime parameter | A generic parameter, such as `'a`, that expresses a lifetime relationship in a type or function signature. |
-| Lost update | A write that replaces another writer's change without detecting that change. |
+| Lost update | A write that replaces a different writer's change without detecting that change. |
 | Migration | A versioned change to a database schema. |
 | Newtype | A new type that wraps a different type, for example `struct TeamId(u32)`. |
 | Non-exhaustive enum | An enum with a declaration that permits future variants without a breaking API change. Downstream matches must include an unknown-case arm. |
@@ -56,7 +56,7 @@ The STE language review must examine their use in context.
 | Orphan rules | Restrictions on trait implementations across crates. For a foreign trait, a local type must occur in `Self` or a trait argument. Other restrictions apply to uncovered type parameters before the first local type. |
 | Outbound adapter | An implementation of a port for an external dependency. An in-memory adapter can substitute for that dependency in tests. |
 | Ownership | Rules for moves and responsibility for dropping values. `Rc` and `Arc` provide shared ownership of an allocation. |
-| Parameterized query | A SQL query that receives data values separately from its SQL text. Parameters do not substitute SQL identifiers. |
+| Parameterized query | A SQL query with parameters for data values. Parameters do not replace SQL identifiers. |
 | Port | A trait that the application declares for a dependency. REAS uses port for the outbound side and use case for the inbound side. |
 | Ports and adapters | Architecture that separates application behavior from external systems through explicit boundaries. Hexagonal architecture is an established alias. |
 | Property test | A test of a stated invariant with generated inputs. |
@@ -103,7 +103,7 @@ The list records their intended meaning; it does not establish STE approval in e
 | Implement | Supply the associated items of a trait for a type. |
 | Instantiate | Substitute concrete arguments into a generic definition. |
 | Monomorphize | Specialize generic code for concrete type and const arguments during compilation. |
-| Propagate | Return an operation's error through its caller instead of handling it there. |
+| Propagate | Return an error from a called operation without local error handling. |
 | Serialize | Convert program values into an external data representation. |
 | Validate | Test data or structure against specified constraints. |
 

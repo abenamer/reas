@@ -32,7 +32,7 @@ For writes across repositories, use one operation-level port with an adapter tha
 Do not expose SQLx transaction types in domain or application code.
 
 Guard workflow transitions as [REAS-STATE-003](state-machines.md#reas-state-003) specifies.
-Do not treat an HTTP call or another external side effect as part of a local database transaction.
+Do not include HTTP calls or other external side effects in the guarantee of a local database transaction.
 For such work, record the retry, idempotency, and partial-failure policy.
 Do not build a generic repository framework before a second concrete implementation exists.
 
