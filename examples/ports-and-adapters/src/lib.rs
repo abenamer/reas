@@ -13,13 +13,16 @@
 
 pub mod domain {
     use std::fmt;
+    use std::num::NonZeroU32;
 
     /// Identifier of a team. Zero is reserved and is not a legal id.
     ///
-    /// The field is private, so `TeamId::new` is the only way to make one
+    /// The standard library already has a type for this invariant, so the
+    /// newtype wraps `NonZeroU32` instead of checking zero by hand. The field
+    /// is private, so `TeamId::new` is the only way to make one
     /// (REAS-RUST-001).
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub struct TeamId(u32);
+    pub struct TeamId(NonZeroU32);
 
     /// Error from `TeamId::new`.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,16 +41,13 @@ pub mod domain {
     impl std::error::Error for InvalidTeamId {}
 
     impl TeamId {
-        /// Smart constructor.
+        /// Smart constructor. It maps the std `None` to the domain error.
         pub fn new(raw: u32) -> Result<Self, InvalidTeamId> {
-            if raw == 0 {
-                return Err(InvalidTeamId::Zero);
-            }
-            Ok(Self(raw))
+            NonZeroU32::new(raw).map(Self).ok_or(InvalidTeamId::Zero)
         }
 
         pub fn get(self) -> u32 {
-            self.0
+            self.0.get()
         }
     }
 

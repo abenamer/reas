@@ -8,7 +8,7 @@ tags: [postgresql, sqlx, transactions]
 # Persistence and transactions
 
 ## REAS-DATA-001 — Use explicit storage operations
-Write a specific SQL query for each operation. Version each schema change as a migration. Map a SQLx row type to a separate domain type when their invariants differ. Enforce invariants with database constraints. Use parameterized queries. Add an index for each query that the application runs often.
+Write a specific SQL query for each operation. Version each schema change as a migration. Map a SQLx row type to a separate domain type when their invariants differ. Enforce invariants with database constraints. Use parameterized queries. Add indexes on the columns that frequent queries filter or join on.
 
 ## REAS-DATA-002 — Set transaction boundaries
 Put each multi-step write in one transaction. Guard workflow transitions against concurrent writers with a conditional update or a row lock, as [REAS-STATE-003](state-machines.md) describes. Do not hide SQL in a generic repository before a second concrete repository exists.

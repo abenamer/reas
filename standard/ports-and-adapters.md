@@ -23,6 +23,6 @@ Define a port trait only at a boundary where you expect to replace the implement
 Keep business rules and mathematical operations as pure functions when you can. Put HTTP serialization, SQLx row mapping, and third-party API clients in adapters. Pass dependencies through constructors.
 
 ## REAS-ARCH-006 — Pass ports as generic parameters by default
-Give a use case its port as a generic parameter, for example `FindTeam<R: TeamRepository>`. This is static dispatch, and the compiler checks the wiring. Use `Box<dyn Port>` or `Arc<dyn Port>` when the implementation is selected at run time, or when generic parameters spread through many types and make them hard to read. State the choice in the composition root.
+Give a use case its port as a generic parameter, for example `FindTeam<R: TeamRepository>`. This is static dispatch, and the concrete adapter is visible in the use case's type at the composition root. Use `Box<dyn Port>` or `Arc<dyn Port>` when the implementation is selected at run time, or when generic parameters spread through many types and make them hard to read. State the choice in the composition root.
 
 The [ports and adapters example](../examples/ports-and-adapters/) shows the full path from a CLI inbound adapter to an in-memory outbound adapter, with one composition root.

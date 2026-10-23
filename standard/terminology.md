@@ -35,12 +35,15 @@ Rules in this standard use these terms with these meanings. When a rule uses a t
 | OKF concept | One Markdown file in the OKF bundle. Its YAML frontmatter includes `type`. |
 | Orphan rule | Compiler rule: a crate can implement a trait for a type only if the crate defines the trait or the type. |
 | Outbound adapter | Adapter that implements a port and calls an external system. Examples: a PostgreSQL repository, an HTTP client. |
-| Ownership | The rule that each value has exactly one owner. When the owner goes out of scope, Rust drops the value. |
+| Ownership | The rule that each value has exactly one owner. When the owner goes out of scope and the value was not moved out, Rust drops the value. |
+| Pure function | Function whose result depends only on its arguments and that has no side effects. |
 | Port | Trait that the application defines for a dependency it needs. An outbound adapter implements the port. REAS uses "port" for the outbound side only. For the inbound side, REAS uses "use case". |
+| Sealed trait | Public trait with a private supertrait, so only the defining crate can implement it. It closes the set of implementing types. |
 | Smart constructor | Function that checks its input and returns a valid domain value or an error. The type's fields are private, so the smart constructor is the only way to make the value. |
 | SQLx | Async Rust SQL library. It can check queries against a database at compile time. |
 | Static dispatch | Method selection at compile time through generics or `impl Trait`. The compiler makes one copy of the code for each concrete type. |
-| Trait object | A `dyn Trait` value. Calls through it use dynamic dispatch. |
+| Test double | Implementation of a port that a test controls, for example an in-memory repository or a stub HTTP client. |
+| Trait object | A value of type `dyn Trait`. It has no fixed size, so it always lives behind a pointer such as `Box<dyn Trait>` or `&dyn Trait`. Calls through it use dynamic dispatch. |
 | Typed error | An error enum or struct that the caller can match on. `Box<dyn Error>` and `anyhow::Error` are not typed errors in REAS. |
 | Typestate | Encoding the state of a value in its type. An operation that is invalid in a state does not compile. |
 | Zero-cost abstraction | Abstraction that has no additional runtime cost relative to equivalent lower-level code. The term says nothing about readability or compile time. |

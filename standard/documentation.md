@@ -27,4 +27,4 @@ Use the [project terminology list](terminology.md) for Rust and architecture ter
 Update domain, architecture, API, operation, and decision documents in the same change as the code. Keep instructions reproducible. Provide prerequisites, ordered steps, expected results, and recovery steps where needed.
 
 ## REAS-DOC-005 — Validate independently
-Run the structural checks: OKF frontmatter, unique rule identifiers, and local links. Record the STE language review separately. Structural validity does not prove technical accuracy or STE compliance.
+Run the structural checks: OKF frontmatter, the bundle index, unique rule identifiers, and local links. Record the STE language review separately. Structural validity does not prove technical accuracy or STE compliance.
