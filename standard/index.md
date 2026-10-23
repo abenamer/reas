@@ -21,3 +21,5 @@ Read only the rules that apply to the current task.
 - [Technical terminology](terminology.md)
 - [STE review](ste-review.md)
 - [Self-audit](self-audit.md)
+- [Documentation checker](checker.md)
+- [Rule identifiers](rule-identifiers.md)

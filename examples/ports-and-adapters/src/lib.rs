@@ -7,7 +7,7 @@
 //! `composition::build_find_team` is the composition root. In a binary crate,
 //! `main` would call it.
 //!
-//! The use case takes its port as a generic parameter (REAS-ARCH-006). The
+//! The use case takes an adapter type parameter (REAS-ARCH-006). The
 //! port returns a `Result` because a real repository can fail, even though
 //! the in-memory adapter here cannot (REAS-RUST-005).
 
@@ -19,8 +19,8 @@ pub mod domain {
     ///
     /// The standard library already has a type for this invariant, so the
     /// newtype wraps `NonZeroU32` instead of checking zero by hand. The field
-    /// is private, so `TeamId::new` is the only way to make one
-    /// (REAS-RUST-001).
+    /// is private, so the tuple constructor is not part of the public API
+    /// (REAS-RUST-001). All public construction paths preserve the invariant.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct TeamId(NonZeroU32);
 
@@ -86,7 +86,8 @@ pub mod application {
 
     impl std::error::Error for RepositoryError {}
 
-    /// Use case. `R` is the port, passed as a generic parameter.
+    /// Use case. `TeamRepository` is the port; `R` is the adapter type.
+    /// This direct delegation establishes the application boundary (REAS-ARCH-001).
     pub struct FindTeam<R> {
         repository: R,
     }
@@ -134,9 +135,12 @@ pub mod cli {
 
     /// Inbound adapter. It parses text, calls the use case, and formats the
     /// result. It contains no domain logic.
+    ///
+    /// This library example returns rendered text. A CLI binary must also set
+    /// a failure exit status when the command fails (REAS-RUST-005).
     pub fn find_team_command<R: TeamRepository>(find_team: &FindTeam<R>, raw_id: &str) -> String {
         let Ok(raw) = raw_id.parse::<u32>() else {
-            return format!("invalid team id: {raw_id:?} is not a number");
+            return format!("invalid team id: expected an unsigned 32-bit integer, got {raw_id:?}");
         };
         let id = match TeamId::new(raw) {
             Ok(id) => id,
@@ -167,7 +171,7 @@ pub mod composition {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::FindTeam;
+    use crate::application::{FindTeam, RepositoryError, TeamRepository};
     use crate::cli::find_team_command;
     use crate::composition::build_find_team;
     use crate::domain::{InvalidTeamId, Team, TeamId};
@@ -214,7 +218,7 @@ mod tests {
     fn cli_rejects_input_that_is_not_a_number() {
         assert_eq!(
             find_team_command(&find_team(), "abc"),
-            "invalid team id: \"abc\" is not a number"
+            "invalid team id: expected an unsigned 32-bit integer, got \"abc\""
         );
     }
 
@@ -223,6 +227,57 @@ mod tests {
         assert_eq!(
             find_team_command(&find_team(), "0"),
             "invalid team id: team id must not be zero"
+        );
+    }
+
+    struct UnavailableRepository;
+
+    impl TeamRepository for UnavailableRepository {
+        fn find(&self, _id: TeamId) -> Result<Option<Team>, RepositoryError> {
+            Err(RepositoryError::Unavailable("offline".to_owned()))
+        }
+    }
+
+    #[test]
+    fn use_case_propagates_repository_failure() {
+        let use_case = FindTeam::new(UnavailableRepository);
+        let id = TeamId::new(3).expect("3 is not zero");
+        assert_eq!(
+            use_case.execute(id),
+            Err(RepositoryError::Unavailable("offline".to_owned()))
+        );
+    }
+
+    #[test]
+    fn cli_formats_repository_failure() {
+        let use_case = FindTeam::new(UnavailableRepository);
+        assert_eq!(
+            find_team_command(&use_case, "3"),
+            "error: repository unavailable: offline"
+        );
+    }
+
+    #[test]
+    fn cli_rejects_a_negative_number() {
+        assert_eq!(
+            find_team_command(&find_team(), "-1"),
+            "invalid team id: expected an unsigned 32-bit integer, got \"-1\""
+        );
+    }
+
+    #[test]
+    fn cli_rejects_a_number_above_u32_max() {
+        assert_eq!(
+            find_team_command(&find_team(), "4294967296"),
+            "invalid team id: expected an unsigned 32-bit integer, got \"4294967296\""
+        );
+    }
+
+    #[test]
+    fn team_id_accepts_u32_max() {
+        assert_eq!(
+            TeamId::new(u32::MAX).expect("u32::MAX is not zero").get(),
+            u32::MAX
         );
     }
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0-draft: 2026-10-23
+
+- Corrected Rust dispatch, allocation, lifetime, coherence, orphan-rule, ownership, and adapter terminology.
+- Clarified private-project exceptions, use-case delegation, terminal error handling, and external-state validation.
+- Added transaction ownership, concurrency outcomes, async-port bounds, SQLx metadata checks, and release-build requirements.
+- Preserved current rule identifiers and documented the historical `REAS-TEST-002` reassignment.
+- Replaced regex link matching with CommonMark parsing. Added fragment, index-reachability, metadata, and reserved-log checks.
+- Added repository failure tests, numeric input boundary tests, per-transition tests, and a downstream sealing test.
+- Pinned Rust toolchains and committed the example lockfiles. Added nightly expected-error-code tests.
+- Split compound instructions and clarified the terminology policy. Recorded the Issue 9 language-review scope and open findings.
+- Replaced the old current-code claim with revision-specific validation evidence in the self-audit.
+
 ## 1.3.0-draft — 2026-10-23
 
 - Corrected the terminology table: lifetime, ownership, port, adapter, SQLx, finite-state machine. Added composition root, smart constructor, typed error, static and dynamic dispatch, coherence, orphan rule, inbound and outbound adapter, hosted build, and human-maintained code.
