@@ -2,7 +2,7 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.2.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.3.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
 
 ## Read the standard
 

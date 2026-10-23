@@ -13,7 +13,7 @@ Each row reports one of three outcomes, as [REAS-TEST-002](validation.md) requir
 
 | Requirement | Check | Outcome |
 | --- | --- | --- |
-| OKF v0.2 concept frontmatter | `scripts/check_docs.py` | Passed locally on 2026-10-23 before this commit. Passed in GitHub Actions run 4 on `main` at `516a0b6`, 2026-10-21. |
+| OKF v0.2 concept frontmatter | `scripts/check_docs.py` | Passed locally on 2026-10-23 at commit `43f1d1a`. Passed in GitHub Actions run 5 on `claude/zen-newton-74jyn8` at `43f1d1a`. Passed in GitHub Actions run 4 on `main` at `516a0b6`, 2026-10-21. |
 | Bundle index present with `okf_version: "0.2"` | `scripts/check_docs.py` | Passed, same runs. The presence check was added on 2026-10-23. Before that date the checker only validated the index when the file existed. |
 | Unique rule identifiers | `scripts/check_docs.py` | Passed, same runs. |
 | Local Markdown links | `scripts/check_docs.py` | Passed, same runs. External URLs are not checked. |

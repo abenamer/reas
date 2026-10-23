@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0-draft — 2026-10-23
 
 - Corrected the terminology table: lifetime, ownership, port, adapter, SQLx, finite-state machine. Added composition root, smart constructor, typed error, static and dynamic dispatch, coherence, orphan rule, inbound and outbound adapter, hosted build, and human-maintained code.
 - Reworded rules that said something other than what they meant. REAS-RUST-002 now separates clarity from runtime cost. REAS-STATE-003 and REAS-DATA-002 now say "guard" transitions, not "enforce" them.
