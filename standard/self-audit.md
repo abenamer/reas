@@ -7,7 +7,7 @@ tags: [quality, documentation, audit]
 
 # REAS self-audit
 
-**Recorded validation: local checks passed on 2026-11-18 for the 1.5.0-draft worktree. Remote evidence for its commit is pending until the pull request checks run.**
+**Recorded validation: Actions run 16 passed for implementation commit `73ebe1d`.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
@@ -33,6 +33,24 @@ This local result has no immutable source commit and is not release evidence.
 | Dependency scan with `cargo deny` or `cargo audit` | Not run. Neither tool is installed in this environment, and the workflow does not yet include the job that REAS-SEC-001 requires. |
 | Miri on the examples | Not run. The examples forbid `unsafe`, so REAS-SEC-004 requires no Miri job for them. |
 | ASD-STE100 language review of `security.md`, REAS-TEST-003, and the new example | Not run. See the review record. |
+
+## Remote evidence for this revision
+
+[Actions run 16](https://github.com/abenamer/reas/actions/runs/44304113162) passed on 2026-11-18.
+Its source commit is `73ebe1d` on `claude/zen-newton-74jyn8`.
+The job list and step conclusions were read from the Actions API after execution.
+
+| Job | Result |
+| --- | --- |
+| [rust-examples-arm64](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114074) | Passed in 14 seconds. |
+| [docs](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114297) | Passed in 6 seconds. |
+| [rust-examples](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114424) | Passed in 20 seconds. |
+| [nightly-doctests](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801115368) | Passed in 99 seconds. |
+
+The `rust-examples-arm64` job ran the trust-boundary differential test on aarch64 for the first time.
+The `nightly-doctests` job installed cargo-fuzz, built the `receive` target, and ran it for the 30-second budget.
+Run 16 verifies the files at `73ebe1d`.
+This audit section was added in the next commit and did not change the checker, tests, example code, lockfiles, or workflow.
 
 ## Historical evidence
 
