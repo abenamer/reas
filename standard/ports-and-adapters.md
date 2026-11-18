@@ -31,6 +31,7 @@ Examples include Axum, SQLx, HTTP, and Docker.
 Declare the necessary ports in application code.
 Use outbound adapters to implement those ports.
 Use inbound adapters to convert external input for application use cases.
+The inbound adapter is the trust boundary, as [REAS-SEC-002](security.md#reas-sec-002) specifies.
 
 <a id="reas-arch-003"></a>
 ## REAS-ARCH-003: Select the architecture for private projects
@@ -41,7 +42,9 @@ Before you select the architecture, ask these questions:
 2. What external systems does it use?
 3. For how long must the project remain in use?
 4. How likely are the boundaries to change?
+5. Who can supply outside data to the application?
 
+The answer to question 5 sets the exposure for the [security rules](security.md).
 Use a flat module layout for a private personal tool with no replaceable external dependency.
 Keep domain behavior separate from I/O even in that layout.
 For other exceptions to REAS-ARCH-001, record the answers and the selected boundaries in an architecture decision.

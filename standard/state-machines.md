@@ -31,6 +31,14 @@ Use a runtime enum to select the state-specific operation.
 After validation, you can construct a typestate value for later operations.
 Typestate does not replace validation of external state.
 
+Model each authentication, authorization, and signature verification step as a state.
+Give the handler a parameter of the verified state type only, for example `fn handle(webhook: Webhook<Verified>)`.
+Then a call with the unverified type does not compile, and the code cannot skip the step.
+Construct the verified type only in the function that does the check.
+Keep that construction private to its module.
+A fuzzer cannot detect a skipped check; the type does.
+Add a compile-fail test that passes the unverified type to the handler.
+
 <a id="reas-state-003"></a>
 ## REAS-STATE-003: Guard persisted transitions
 
@@ -51,3 +59,4 @@ Typestate alone cannot prevent a stale read or a lost update.
 
 The [typestate example](../examples/typestate/) demonstrates in-process state restrictions.
 It does not demonstrate persisted transitions.
+The [trust-boundary example](../examples/trust-boundary/) demonstrates a verification step as a state.

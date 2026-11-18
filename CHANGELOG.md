@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0-draft: 2026-11-18
+
+- Added [Security at seams](standard/security.md): REAS-SEC-002 trust boundaries and validated types, REAS-SEC-003 sizes from outside data with checked arithmetic, REAS-SEC-004 confined unsafe code, REAS-SEC-005 duplicate implementations against a reference, and REAS-SEC-006 output encoding.
+- Moved REAS-SEC-001 to the new concept and extended it with a CI dependency scan and a review of unsafe code in dependencies that read outside data. Its unsafe-code requirements moved to REAS-SEC-004; the split is recorded in the identifier policy.
+- Added REAS-TEST-003 on fuzz targets, property assertions, persisted corpora, stage budgets, and architecture coverage. Retitled the validation concept to Validation and evidence.
+- Extended REAS-STATE-002 with authentication and verification steps as states, and REAS-ARCH-003 with a fifth question on who can supply outside data. Each security rule scales by that exposure.
+- Added the trust-boundary example: a length-prefixed frame parsed with checked arithmetic, a verification state that the handler requires, a validated event type through serde `try_from`, a SWAR checksum with a differential test, lint and overflow-check settings in the manifest, and a libFuzzer target with a seed corpus.
+- CI runs the new crate on x86_64 and aarch64, and builds and runs the fuzz target for 30 seconds on nightly.
+- Added terminology for checked arithmetic, corpus, differential test, exposure, full-width access, fuzz target, outside data, output context, reference implementation, scalar tail, seam, SIMD, trust boundary, and the verbs encode, fuzz, and sanitize.
+
 ## 1.4.0-draft: 2026-10-23
 
 - Corrected Rust dispatch, allocation, lifetime, coherence, orphan-rule, ownership, and adapter terminology.

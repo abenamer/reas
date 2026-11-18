@@ -12,6 +12,7 @@ tags: [rust, types, traits, ownership, async]
 
 Use newtypes with private fields for domain values with extra invariants.
 Use smart constructors to validate input.
+Route deserialization through the same validation, as [REAS-SEC-002](security.md#reas-sec-002) specifies.
 Make sure that all safe public APIs preserve the invariants.
 Use `Option` for an optional value.
 Use `Result` for an operation that can fail.
@@ -67,7 +68,7 @@ Record the reason when the current model is necessary.
 Do not use `unsafe` to violate aliasing or lifetime requirements.
 The borrow checker also does its checks on references in an `unsafe` block.
 When safe Rust cannot express an operation, isolate the unsafe implementation.
-Document its safety conditions as [REAS-SEC-001](validation.md#reas-sec-001) specifies.
+Confine and document it as [REAS-SEC-004](security.md#reas-sec-004) specifies.
 
 <a id="reas-rust-005"></a>
 ## REAS-RUST-005: Handle errors explicitly
