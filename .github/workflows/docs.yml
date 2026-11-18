@@ -30,18 +30,35 @@ jobs:
         run: |
           cargo check --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets
           cargo check --locked --manifest-path examples/typestate/Cargo.toml --all-targets
+          cargo check --locked --manifest-path examples/trust-boundary/Cargo.toml --all-targets
       - name: Test examples
         run: |
           cargo test --locked --manifest-path examples/ports-and-adapters/Cargo.toml
           cargo test --locked --manifest-path examples/typestate/Cargo.toml
+          cargo test --locked --manifest-path examples/trust-boundary/Cargo.toml
       - name: Check formatting
         run: |
           cargo fmt --manifest-path examples/ports-and-adapters/Cargo.toml --all -- --check
           cargo fmt --manifest-path examples/typestate/Cargo.toml --all -- --check
+          cargo fmt --manifest-path examples/trust-boundary/Cargo.toml --all -- --check
+          cargo fmt --manifest-path examples/trust-boundary/fuzz/Cargo.toml --all -- --check
       - name: Clippy
         run: |
           cargo clippy --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets -- -D warnings
           cargo clippy --locked --manifest-path examples/typestate/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path examples/trust-boundary/Cargo.toml --all-targets -- -D warnings
+  # REAS-SEC-005 and REAS-TEST-003: the differential test runs on each
+  # deployed CPU architecture. This example deploys nowhere, so one extra
+  # architecture demonstrates the matrix.
+  rust-examples-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.99.1
+      - name: Differential tests on aarch64
+        run: cargo test --locked --manifest-path examples/trust-boundary/Cargo.toml
   nightly-doctests:
     runs-on: ubuntu-latest
     steps:
@@ -50,4 +67,15 @@ jobs:
         with:
           toolchain: nightly-2026-10-23
       - name: Test expected diagnostic codes
-        run: cargo +nightly-2026-10-23 test --locked --manifest-path examples/typestate/Cargo.toml --doc
+        run: |
+          cargo +nightly-2026-10-23 test --locked --manifest-path examples/typestate/Cargo.toml --doc
+          cargo +nightly-2026-10-23 test --locked --manifest-path examples/trust-boundary/Cargo.toml --doc
+      - name: Install cargo-fuzz
+        run: cargo +nightly-2026-10-23 install cargo-fuzz --locked
+      # REAS-TEST-003 pull-request budget: 30 seconds from the seed corpus.
+      - name: Build the trust-boundary fuzz target
+        working-directory: examples/trust-boundary
+        run: cargo +nightly-2026-10-23 fuzz build receive
+      - name: Run the trust-boundary fuzz target for 30 seconds
+        working-directory: examples/trust-boundary
+        run: cargo +nightly-2026-10-23 fuzz run receive -- -max_total_time=30

@@ -7,10 +7,50 @@ tags: [quality, documentation, audit]
 
 # REAS self-audit
 
-**Recorded validation: Actions run 11 passed for implementation commit `d746f9a`.**
+**Recorded validation: Actions run 16 passed for implementation commit `73ebe1d`.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
+
+## Local evidence: 2026-11-18
+
+The local environment uses Python 3, Rust 1.99.1 from `rust-toolchain.toml`, `nightly-2026-10-23`, and cargo-fuzz 0.13.2.
+The checks below ran on the 1.5.0-draft worktree before its first commit.
+This local result has no immutable source commit and is not release evidence.
+
+| Check | Outcome |
+| --- | --- |
+| `python scripts/check_docs.py` | Passed locally. |
+| `python -m unittest discover -s tests -v` | Passed locally. |
+| Adapter example: `cargo check`, `cargo test`, Clippy, rustfmt, all `--locked` | Passed locally, 12 unit tests. |
+| Typestate example: same commands | Passed locally, three unit tests and four doctests. |
+| Trust-boundary example: same commands | Passed locally, 24 unit tests, one doctest, two compile-fail doctests. |
+| Trust-boundary example: nightly `cargo test --locked --doc` | Passed locally. Two compile-fail tests asserted expected diagnostic codes E0308 and E0277. |
+| Trust-boundary fuzz target: `cargo fuzz build receive` | Passed locally on nightly-2026-10-23. |
+| Trust-boundary fuzz target: `cargo fuzz run receive -- -max_total_time=30` | Passed locally on x86_64. 5,873,517 executions in 31 seconds from the two seed inputs, no crash, no artifact. The run grew the corpus to 66 inputs; only the two seeds are committed. |
+| Fuzz crate: `cargo fmt --all -- --check` | Passed locally. |
+| Trust-boundary differential test on aarch64 | Not run locally. The `rust-examples-arm64` workflow job runs it; its first result arrives with the pull request checks. |
+| Dependency scan with `cargo deny` or `cargo audit` | Not run. Neither tool is installed in this environment, and the workflow does not yet include the job that REAS-SEC-001 requires. |
+| Miri on the examples | Not run. The examples forbid `unsafe`, so REAS-SEC-004 requires no Miri job for them. |
+| ASD-STE100 language review of `security.md`, REAS-TEST-003, and the new example | Not run. See the review record. |
+
+## Remote evidence for this revision
+
+[Actions run 16](https://github.com/abenamer/reas/actions/runs/44304113162) passed on 2026-11-18.
+Its source commit is `73ebe1d` on `claude/zen-newton-74jyn8`.
+The job list and step conclusions were read from the Actions API after execution.
+
+| Job | Result |
+| --- | --- |
+| [rust-examples-arm64](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114074) | Passed in 14 seconds. |
+| [docs](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114297) | Passed in 6 seconds. |
+| [rust-examples](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801114424) | Passed in 20 seconds. |
+| [nightly-doctests](https://github.com/abenamer/reas/actions/runs/44304113162/job/134801115368) | Passed in 99 seconds. |
+
+The `rust-examples-arm64` job ran the trust-boundary differential test on aarch64 for the first time.
+The `nightly-doctests` job installed cargo-fuzz, built the `receive` target, and ran it for the 30-second budget.
+Run 16 verifies the files at `73ebe1d`.
+This audit section was added in the next commit and did not change the checker, tests, example code, lockfiles, or workflow.
 
 ## Historical evidence
 

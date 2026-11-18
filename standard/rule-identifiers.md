@@ -26,6 +26,16 @@ This table records the conflict; it cannot make the old references unambiguous.
 | Security properties | `REAS-TEST-003` | [REAS-SEC-001](validation.md#reas-sec-001) |
 | Evidence reporting | `REAS-TEST-004` | [REAS-TEST-002](validation.md#reas-test-002) |
 
+## Split in 1.5.0-draft
+
+Version 1.5.0-draft moved the `REAS-SEC` family from `validation.md` to [`security.md`](security.md).
+The identifiers did not change.
+`validation.md` keeps an anchor for `REAS-SEC-001` that points to the new location.
+
+REAS-SEC-001 kept its identifier and its purpose.
+Its requirements for the project's own `unsafe` code moved to [REAS-SEC-004](security.md#reas-sec-004).
+A reference to REAS-SEC-001 for a `SAFETY` comment or a Miri result from before 1.5.0-draft now means REAS-SEC-004.
+
 The current identifiers remain in use to avoid another reassignment.
 Resolve an old reference against its cited version or commit.
 If that context is absent, report the ambiguity instead of selecting a meaning silently.

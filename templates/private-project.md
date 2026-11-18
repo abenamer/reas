@@ -6,6 +6,7 @@ Before you select the architecture, ask these questions:
 2. What external systems does it use?
 3. For how long must the project remain in use?
 4. How likely are the boundaries to change?
+5. Who can supply outside data to the application?
 
 Record the answers under [REAS-ARCH-003](../standard/ports-and-adapters.md#reas-arch-003).
 Use a flat module layout for a private personal tool with no replaceable external dependency.

@@ -38,6 +38,9 @@ The primary language pass covers these documents:
 - [Documentation rules](documentation.md).
 - [Terminology](terminology.md).
 
+Version 1.5.0-draft added [Security at seams](security.md), REAS-TEST-003, new terminology rows, and the trust-boundary example after this review.
+That text is outside the scope of this record and has had no language review.
+
 The README, agent instructions, templates, and examples README also received plain-language edits.
 They did not receive a complete dictionary review.
 Code identifiers, commands, paths, rule identifiers, and diagnostic codes retain their exact spelling.
