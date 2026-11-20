@@ -3,14 +3,57 @@ type: Audit Report
 title: REAS self-audit
 description: Revision-specific validation evidence and remaining limitations.
 tags: [quality, documentation, audit]
+updated: 2026-11-20
 ---
 
 # REAS self-audit
 
-**Recorded validation: Actions run 16 passed for implementation commit `73ebe1d`.**
+**Recorded validation: local checks passed on 2026-11-20 for the 1.6.0-draft worktree. Remote evidence for its commit is pending until the pull request checks run.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
+
+## Path-to-job coverage
+
+[REAS-DOC-006](documentation.md#reas-doc-006) forbids a zero-gated path: a file a change can touch that no job checks.
+Every job runs one subcommand of `scripts/check.sh`, so this table and the workflow cannot drift apart.
+
+| Path group | Job | Check |
+| --- | --- | --- |
+| `standard/**`, root `*.md`, `templates/**` | `docs` | `scripts/check.sh docs`: frontmatter, index reachability, rule shape, quality tests, retired terms, links, freshness |
+| `scripts/check_docs.py`, `tests/**`, `requirements-docs.txt` | `docs` | The checker's 59 unit tests, including a planted violation for each gate |
+| `examples/*/src/**`, `examples/*/Cargo.toml`, `examples/*/Cargo.lock` | `rust-examples`, `rust-examples-arm64`, `msrv` | check, test, Clippy with `-D warnings`, rustfmt, documentation build with `-D warnings`, on x86_64, aarch64, and Rust 1.88.0 |
+| `examples/trust-boundary/fuzz/**` | `rust-examples`, `nightly-doctests` | Clippy and rustfmt on stable; build and a 30-second run on nightly |
+| Compile-fail doctests | `nightly-doctests` | Expected diagnostic codes asserted |
+| `scripts/check.sh` | every job | A defect in the script fails every job |
+| `.github/workflows/docs.yml` | none beyond its own execution | Not gated by a workflow linter. A syntax error fails every job; a wrong step name does not. |
+| `LICENSE-*`, `.gitignore`, `rust-toolchain.toml` | none | Not gated. The toolchain file is read by every Cargo job but its content is not asserted. |
+
+## Local evidence: 2026-11-20
+
+The local environment uses Python 3, Rust 1.99.1 from `rust-toolchain.toml`, Rust 1.88.0 for the MSRV check, `nightly-2026-10-23`, and cargo-fuzz 0.13.2.
+Each row reports one of the six outcomes of [REAS-TEST-002](validation.md#reas-test-002).
+The checks ran on the 1.6.0-draft worktree before its first commit.
+This local result has no immutable source commit and is not release evidence.
+
+| Check | Outcome | Evidence |
+| --- | --- | --- |
+| `scripts/check.sh docs`: `python3 scripts/check_docs.py` | Passed | PASS line; zero freshness warnings on 2026-11-20 |
+| `scripts/check.sh docs`: `python3 -m unittest discover -s tests -v` | Passed | 59 tests, 0 failed, 0 skipped |
+| `scripts/check.sh rust`: adapter example | Passed | check, 12 unit tests, Clippy, rustfmt, doc build |
+| `scripts/check.sh rust`: typestate example | Passed | check, 3 unit tests, 4 doctests, Clippy, rustfmt, doc build |
+| `scripts/check.sh rust`: trust-boundary example | Passed | check, 24 unit tests, 3 doctests, Clippy, rustfmt, doc build |
+| `scripts/check.sh rust`: fuzz crate Clippy and rustfmt | Passed | first run of this check; it closes the zero-gated path the 1.5.0-draft audit missed |
+| MSRV: `cargo +1.88.0 check --locked --all-targets` for each crate | Passed | three crates, exit 0 |
+| `scripts/check.sh nightly`: typestate doctests | Passed | 4 doctests, 3 compile-fail with expected codes |
+| `scripts/check.sh nightly`: trust-boundary doctests | Passed | 3 doctests, 2 compile-fail with expected codes |
+| `scripts/check.sh nightly`: `cargo fuzz build receive` | Passed | built on nightly-2026-10-23 |
+| `scripts/check.sh nightly`: `cargo fuzz run receive -- -max_total_time=30` | Passed | 5,059,587 executions in 31 seconds, no crash, no artifact; corpus trimmed back to the two seeds before commit |
+| Differential tests on aarch64 | Not run | No aarch64 machine locally; the `rust-examples-arm64` job runs them |
+| `cargo deny check` | Not run | Not installed, and the examples are not applications, so REAS-SEC-001 does not require it for them |
+| `cargo mutants` | Not run | Not installed; REAS-TEST-001 names it as a pre-review tool, not a CI gate |
+| Miri | Not run | Every example forbids `unsafe`, so REAS-SEC-004 requires no Miri job for them |
+| ASD-STE100 language review of the 1.6.0-draft text | Not run | See the review record |
 
 ## Local evidence: 2026-11-18
 

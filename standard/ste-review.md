@@ -7,6 +7,7 @@ sources:
   - id: ste9
     resource: https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf
     title: ASD-STE100 Issue 9, 2025-01-15
+updated: 2026-11-20
 ---
 
 # Simplified Technical English review
@@ -39,6 +40,7 @@ The primary language pass covers these documents:
 - [Terminology](terminology.md).
 
 Version 1.5.0-draft added [Security at seams](security.md), REAS-TEST-003, new terminology rows, and the trust-boundary example after this review.
+Version 1.6.0-draft rewrote every rule into the Intent, Enforcement, Scope, Rules, Verification shape and added REAS-RUST-008, REAS-RUST-009, REAS-DATA-005, REAS-TEST-004, REAS-TEST-005, and REAS-DOC-006.
 That text is outside the scope of this record and has had no language review.
 
 The README, agent instructions, templates, and examples README also received plain-language edits.

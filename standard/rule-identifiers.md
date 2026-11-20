@@ -3,6 +3,7 @@ type: Technical Reference
 title: Rule identifiers
 description: Identifier stability and historical mappings for REAS rules.
 tags: [rules, compatibility, history]
+updated: 2026-11-20
 ---
 
 # Rule identifiers
