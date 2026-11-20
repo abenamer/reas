@@ -8,10 +8,30 @@ updated: 2026-11-20
 
 # REAS self-audit
 
-**Recorded validation: local checks passed on 2026-11-20 for the 1.6.0-draft worktree. Remote evidence for its commit is pending until the pull request checks run.**
+**Recorded validation: Actions run 20 passed for implementation commit `f208fb5`.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
+
+## Remote evidence for this revision
+
+[Actions run 20](https://github.com/abenamer/reas/actions/runs/44820161148) passed on 2026-11-20.
+Its source commit is `f208fb5` on `claude/zen-newton-74jyn8`.
+The job list and step conclusions were read from the Actions API after execution.
+Each row reports one of the six outcomes of [REAS-TEST-002](validation.md#reas-test-002); no job was skipped, retried, or timed out.
+
+| Job | Outcome | Evidence |
+| --- | --- | --- |
+| [docs](https://github.com/abenamer/reas/actions/runs/44820161148/job/136578673670) | Passed | 9 seconds, conclusion success, every step success |
+| [msrv](https://github.com/abenamer/reas/actions/runs/44820161148/job/136578674564) | Passed | 16 seconds, conclusion success, every step success |
+| [rust-examples-arm64](https://github.com/abenamer/reas/actions/runs/44820161148/job/136578674730) | Passed | 37 seconds, conclusion success, every step success |
+| [rust-examples](https://github.com/abenamer/reas/actions/runs/44820161148/job/136578674779) | Passed | 43 seconds, conclusion success, every step success |
+| [nightly-doctests](https://github.com/abenamer/reas/actions/runs/44820161148/job/136578674810) | Passed | 102 seconds, conclusion success, every step success |
+
+The `msrv` job ran for the first time and compiled every example on Rust 1.88.0.
+The `rust-examples` and `rust-examples-arm64` jobs ran `scripts/check.sh rust`, which now includes the fuzz crate's Clippy and rustfmt and each crate's documentation build with warnings denied.
+Run 20 verifies the files at `f208fb5`.
+This audit section was added in the next commit and did not change the checker, tests, example code, lockfiles, workflow, or check script.
 
 ## Path-to-job coverage
 
