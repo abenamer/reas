@@ -2,7 +2,7 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.5.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.7.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
 
 ## Read the standard
 
@@ -16,6 +16,7 @@ For AI coding agents, use [CLAUDE.md](CLAUDE.md) or [AGENTS.md](AGENTS.md).
 - [Persistence and transactions](standard/persistence.md)
 - [Validation and evidence](standard/validation.md)
 - [Security at seams](standard/security.md)
+- [Native code](standard/native-code.md)
 - [Documentation](standard/documentation.md)
 - [Technical terminology](standard/terminology.md)
 - [Self-audit and limitations](standard/self-audit.md)
@@ -32,14 +33,15 @@ For private projects, use [REAS-ARCH-003](standard/ports-and-adapters.md#reas-ar
 Use ASD-STE100, Issue 9, as the **target** writing standard. Keep project knowledge in an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) bundle. **The language review does not establish full STE compliance.**
 See the [review scope and open findings](standard/ste-review.md).
 
-## Check the documentation
+## Check the repository
 
-Install the validation dependency, then run the checks:
+`scripts/check.sh` is the one list of this repository's checks; CI runs the same script.
+Install the documentation dependency, then run it:
 
 ```bash
 python -m pip install -r requirements-docs.txt
-python scripts/check_docs.py
-python -m unittest discover -s tests -v
+scripts/check.sh all        # documentation checker, its tests, and the stable Cargo checks
+scripts/check.sh nightly    # expected-error-code doctests and the fuzz target; needs cargo-fuzz
 ```
 
 The checker validates the REAS frontmatter profile, index reachability, rule declarations, local destinations, and Markdown fragments.

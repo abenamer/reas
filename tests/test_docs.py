@@ -3,10 +3,29 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from scripts.check_docs import split_frontmatter, validate
+from datetime import date
+
+from scripts.check_docs import freshness_warnings, retired_terms, split_frontmatter, validate
+
+REPO = Path(__file__).resolve().parents[1]
+
+RULE_BODY = (
+    '### Intent\n\nWhy.\n\n### Enforcement\n\nRequired.\n\n### Scope\n\nWhere.\n\n'
+    '### Rules\n\nDo this.\n\n### Verification\n\n- Review question: how?\n'
+)
+STANDARD = (
+    '---\ntype: Engineering Standard\nupdated: 2026-11-20\n---\n# Title\n\n'
+    '## REAS-RUST-001: Rule\n\n' + RULE_BODY + '\n## Quality test\n\nCan it?\n'
+)
+TERMINOLOGY = (
+    '---\ntype: Technical Reference\n---\n# Terms\n\n## Retired terms\n\n'
+    '| Term | Use instead |\n| --- | --- |\n| old term | new term |\n'
+)
 
 
-class CheckDocsTests(unittest.TestCase):
+class FixtureTests(unittest.TestCase):
+    """Shared temporary-bundle helpers. Holds no tests of its own."""
+
     def fixture(self, files=None):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -26,6 +45,8 @@ class CheckDocsTests(unittest.TestCase):
         path = root / name
         path.write_text(path.read_text() + content)
 
+
+class CheckDocsTests(FixtureTests):
     def test_valid_frontmatter(self):
         metadata, body, error = split_frontmatter('---\ntype: Rule\n---\nText')
         self.assertIsNone(error)
@@ -218,6 +239,161 @@ class CheckDocsTests(unittest.TestCase):
     def test_unknown_metadata_is_preserved_as_an_extension(self):
         root = self.fixture({'standard/rule.md': '---\ntype: Rule\ncustom: value\n---\n# REAS-RUST-001\n'})
         self.assertEqual(validate(root), [])
+
+
+class RuleShapeTests(FixtureTests):
+    def standard(self, body=STANDARD, extra=None):
+        files = {'standard/rule.md': body}
+        files.update(extra or {})
+        return self.fixture(files)
+
+    def test_well_formed_standard_passes(self):
+        self.assertEqual(validate(self.standard(), today=date(2026, 11, 20)), [])
+
+    def test_rule_type_fixtures_are_not_held_to_the_shape(self):
+        self.assertEqual(validate(self.fixture()), [])
+
+    def test_missing_section_is_rejected(self):
+        body = STANDARD.replace('### Scope\n\nWhere.\n\n', '')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('Sections must be' in error for error in errors), errors)
+
+    def test_sections_out_of_order_are_rejected(self):
+        body = STANDARD.replace('### Intent\n\nWhy.\n\n### Enforcement\n\nRequired.\n\n',
+                                '### Enforcement\n\nRequired.\n\n### Intent\n\nWhy.\n\n')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('Sections must be' in error for error in errors), errors)
+
+    def test_allowances_is_optional_but_positioned(self):
+        good = STANDARD.replace('### Verification', '### Allowances\n\nExcept here.\n\n### Verification')
+        self.assertEqual(validate(self.standard(good), today=date(2026, 11, 20)), [])
+        bad = STANDARD.replace('### Rules', '### Allowances\n\nExcept here.\n\n### Rules')
+        errors = validate(self.standard(bad), today=date(2026, 11, 20))
+        self.assertTrue(any('Sections must be' in error for error in errors), errors)
+
+    def test_enforcement_value_is_closed(self):
+        for value, ok in (('Required.', True), ('Advisory.', True), ('Mandatory.', False), ('required', False)):
+            with self.subTest(value=value):
+                body = STANDARD.replace('Required.', value)
+                errors = validate(self.standard(body), today=date(2026, 11, 20))
+                self.assertEqual(any('Enforcement must be' in error for error in errors), not ok, errors)
+
+    def test_empty_section_is_rejected(self):
+        body = STANDARD.replace('### Rules\n\nDo this.\n\n', '### Rules\n\n')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('Rules section is empty' in error for error in errors), errors)
+
+    def test_rule_heading_must_be_level_two(self):
+        body = STANDARD.replace('## REAS-RUST-001: Rule', '### REAS-RUST-001: Rule')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('must be level 2' in error for error in errors), errors)
+
+    def test_quality_test_is_required_and_non_empty(self):
+        missing = STANDARD.replace('\n## Quality test\n\nCan it?\n', '')
+        errors = validate(self.standard(missing), today=date(2026, 11, 20))
+        self.assertTrue(any("Missing 'Quality test'" in error for error in errors), errors)
+        empty = STANDARD.replace('Can it?\n', '')
+        errors = validate(self.standard(empty), today=date(2026, 11, 20))
+        self.assertTrue(any("'Quality test' section is empty" in error for error in errors), errors)
+
+    def test_every_real_rule_has_the_shape(self):
+        # Floor for the gate: the real bundle declares rules in Engineering Standard concepts.
+        count = sum(
+            path.read_text().count('\n## REAS-')
+            for path in (REPO / 'standard').glob('*.md')
+            if 'type: Engineering Standard' in path.read_text()
+        )
+        self.assertGreaterEqual(count, 20)
+        self.assertEqual(validate(REPO), [])
+
+
+class RetiredTermTests(FixtureTests):
+    def bundle(self, extra=None):
+        files = {'standard/terminology.md': TERMINOLOGY}
+        files.update(extra or {})
+        root = self.fixture(files)
+        self.append(root, '\n[Terms](terminology.md)\n', name='standard/index.md')
+        return root
+
+    def test_clean_bundle_passes(self):
+        self.assertEqual(validate(self.bundle()), [])
+
+    def test_planted_retired_term_fails(self):
+        root = self.bundle()
+        self.append(root, '\nWe use the OLD TERM here.\n')
+        errors = validate(root)
+        self.assertIn("standard/rule.md: Retired term 'old term'; use new term", errors)
+
+    def test_retired_term_in_code_is_not_flagged(self):
+        root = self.bundle()
+        self.append(root, '\nUse `old term` only in code.\n\n```text\nold term\n```\n')
+        self.assertEqual(validate(root), [])
+
+    def test_exempt_documents_may_mention_retired_terms(self):
+        root = self.bundle({'CHANGELOG.md': '# Changelog\n\nRenamed old term.\n'})
+        self.assertEqual(validate(root), [])
+
+    def test_missing_or_empty_table_is_a_floor_failure(self):
+        for text, message in (
+            ('---\ntype: Technical Reference\n---\n# Terms\n', 'Retired terms section is missing'),
+            ('---\ntype: Technical Reference\n---\n# Terms\n\n## Retired terms\n\n| Term | Use instead |\n| --- | --- |\n', 'Retired terms table is empty'),
+        ):
+            with self.subTest(message=message):
+                root = self.bundle({'standard/terminology.md': text})
+                self.assertTrue(any(message in error for error in validate(root)))
+
+    def test_bundle_without_terminology_is_not_scanned(self):
+        root = self.fixture()
+        self.append(root, '\nold term\n')
+        self.assertEqual(validate(root), [])
+
+    def test_real_terminology_retires_at_least_one_term(self):
+        rows = retired_terms((REPO / 'standard/terminology.md').read_text())
+        self.assertIsNotNone(rows)
+        self.assertGreaterEqual(len(rows), 1)
+
+    def test_parser_reads_term_and_replacement(self):
+        self.assertEqual(retired_terms(TERMINOLOGY), [('old term', 'new term')])
+
+
+class FreshnessTests(FixtureTests):
+    def concept(self, updated, kind='Engineering Standard'):
+        body = STANDARD.replace('type: Engineering Standard\nupdated: 2026-11-20', f'type: {kind}\nupdated: {updated}')
+        return self.fixture({'standard/rule.md': body})
+
+    def test_invalid_and_future_dates_are_errors(self):
+        today = date(2026, 11, 20)
+        self.assertTrue(any('Invalid updated' in e for e in validate(self.concept('yesterday'), today=today)))
+        self.assertTrue(any('is in the future' in e for e in validate(self.concept('2027-01-01'), today=today)))
+
+    def test_stale_concept_is_a_warning_not_an_error(self):
+        root = self.concept('2025-01-01')
+        today = date(2026, 11, 20)
+        self.assertEqual(validate(root, today=today), [])
+        warnings = freshness_warnings(root, today=today)
+        self.assertEqual(len(warnings), 1)
+        self.assertIn('the limit for Engineering Standard is 365', warnings[0])
+
+    def test_threshold_depends_on_type(self):
+        today = date(2026, 11, 20)
+        fresh_enough_for_a_rule = self.concept('2026-08-01')
+        self.assertEqual(freshness_warnings(fresh_enough_for_a_rule, today=today), [])
+        stale_for_an_audit = self.concept('2026-08-01', kind='Audit Report')
+        warnings = freshness_warnings(stale_for_an_audit, today=today)
+        self.assertEqual(len(warnings), 1)
+        self.assertIn('the limit for Audit Report is 90', warnings[0])
+
+    def test_concept_without_updated_is_not_warned(self):
+        self.assertEqual(freshness_warnings(self.fixture(), today=date(2026, 11, 20)), [])
+
+    def test_every_real_concept_has_an_updated_date(self):
+        missing = [
+            path.relative_to(REPO).as_posix()
+            for path in (REPO / 'standard').rglob('*.md')
+            if path.name not in {'index.md', 'log.md'}
+            and 'updated:' not in path.read_text().split('\n---', 1)[0]
+        ]
+        self.assertEqual(missing, [])
 
 
 if __name__ == '__main__':

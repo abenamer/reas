@@ -18,22 +18,13 @@ The CLI example returns rendered text from a library function.
 A CLI executable must also set the exit status for a failed command.
 The examples do not include a database adapter, persisted transitions, transaction ownership, an async port, a message authentication code, output encoding, or a dependency scan.
 
-Run the stable checks:
+Run the stable checks for every crate, including the fuzz crate's lint and the documentation build with warnings denied:
 
 ```bash
-cargo check --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets
-cargo check --locked --manifest-path examples/typestate/Cargo.toml --all-targets
-cargo check --locked --manifest-path examples/trust-boundary/Cargo.toml --all-targets
-cargo test --locked --manifest-path examples/ports-and-adapters/Cargo.toml
-cargo test --locked --manifest-path examples/typestate/Cargo.toml
-cargo test --locked --manifest-path examples/trust-boundary/Cargo.toml
-cargo clippy --locked --manifest-path examples/ports-and-adapters/Cargo.toml --all-targets -- -D warnings
-cargo clippy --locked --manifest-path examples/typestate/Cargo.toml --all-targets -- -D warnings
-cargo clippy --locked --manifest-path examples/trust-boundary/Cargo.toml --all-targets -- -D warnings
-cargo fmt --manifest-path examples/ports-and-adapters/Cargo.toml --all -- --check
-cargo fmt --manifest-path examples/typestate/Cargo.toml --all -- --check
-cargo fmt --manifest-path examples/trust-boundary/Cargo.toml --all -- --check
+scripts/check.sh rust
 ```
+
+Each manifest declares `rust-version = "1.88"`, forbids `unsafe`, and warns on a missing doc comment; the `msrv` CI job compiles each crate on that toolchain.
 
 Stable rustdoc tests that a `compile_fail` snippet does not compile.
 It does not test the expected error code.
@@ -47,13 +38,11 @@ cargo +nightly-2026-10-23 test --locked --manifest-path examples/typestate/Cargo
 Nightly rustdoc fails a doctest when an expected error code is absent.
 It can accept extra diagnostics.
 
-Run the fuzz target with the pull-request budget from REAS-TEST-003:
+Run the nightly checks, which include the fuzz target with the pull-request budget from REAS-TEST-003:
 
 ```bash
 cargo +nightly-2026-10-23 install cargo-fuzz --locked
-cd examples/trust-boundary
-cargo +nightly-2026-10-23 fuzz build receive
-cargo +nightly-2026-10-23 fuzz run receive -- -max_total_time=30
+scripts/check.sh nightly
 ```
 
 The run reads the seed corpus in `fuzz/corpus/receive/` and writes new inputs there.

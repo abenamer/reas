@@ -4,6 +4,11 @@
 Parse CommonMark links, images, headings, and HTML href/src/id attributes.
 Resolve heading fragments with GitHub-style slugs. Do not fetch external URLs.
 Check rule declarations in ATX or Setext headings throughout the repository.
+In Engineering Standard concepts, check the rule shape (Intent, Enforcement,
+Scope, Rules, optional Allowances, Verification) and the Quality test section.
+Check that no document outside the exempt list uses a retired term from the
+terminology table. Report concepts whose `updated` date is older than the
+freshness threshold for their type as warnings, not errors.
 """
 from __future__ import annotations
 
@@ -20,6 +25,22 @@ from markdown_it import MarkdownIt
 import yaml
 
 RULE = re.compile(r"^(REAS-[A-Z]+-\d{3})(?=$|[\s:])")
+RULE_TYPE = "Engineering Standard"
+RULE_SECTIONS = ("Intent", "Enforcement", "Scope", "Rules", "Verification")
+OPTIONAL_RULE_SECTION = "Allowances"
+ENFORCEMENT_VALUES = ("Required.", "Advisory.")
+QUALITY_TEST = "Quality test"
+TERMINOLOGY = "standard/terminology.md"
+RETIRED_TERMS_HEADING = "## Retired terms"
+# Documents that quote retired terms on purpose: the table that retires them,
+# the identifier history, the changelog, and the language-review record.
+RETIRED_TERM_EXEMPT = frozenset({
+    TERMINOLOGY, "standard/rule-identifiers.md", "CHANGELOG.md", "standard/ste-review.md",
+})
+# Freshness threshold in days by concept type (REAS-DOC-002). Other types use
+# FRESHNESS_DEFAULT_DAYS. A stale concept is a warning, not an error.
+FRESHNESS_DAYS = {"Audit Report": 90, "Review Procedure": 180, "Technical Reference": 180}
+FRESHNESS_DEFAULT_DAYS = 365
 ACTOR = re.compile(r"^(?:human:[^\s]+|process:[^\s]+|[^\s/]+/[^\s/]+)$")
 MARKDOWN = MarkdownIt("commonmark")
 
@@ -82,11 +103,20 @@ class HTMLReferences(HTMLParser):
 
 
 @dataclass
+class Section:
+    level: int
+    text: str
+    body: str
+
+
+@dataclass
 class Document:
     body: str
     headings: list[tuple[int, str]]
     links: list[str]
     anchors: set[str]
+    sections: list[Section]
+    plain: str
 
 
 def parse_document(body: str) -> Document:
@@ -96,6 +126,9 @@ def parse_document(body: str) -> Document:
     anchors = set()
     used_slugs = set()
     html = HTMLReferences()
+    sections: list[Section] = []
+    section_bodies: list[list[str]] = []
+    plain: list[str] = []
 
     def read_inline(children):
         for child in children or []:
@@ -107,6 +140,15 @@ def parse_document(body: str) -> Document:
                 html.feed(child.content)
             read_inline(child.children)
 
+    def inline_text(children, with_code: bool) -> str:
+        kinds = {"text", "code_inline"} if with_code else {"text"}
+        parts = []
+        for child in children or []:
+            if child.type in kinds:
+                parts.append(child.content)
+            parts.append(inline_text(child.children, with_code))
+        return "".join(parts)
+
     for index, token in enumerate(tokens):
         if token.type == "heading_open":
             inline = tokens[index + 1]
@@ -115,6 +157,9 @@ def parse_document(body: str) -> Document:
                 if child.type in {"text", "code_inline", "image"}
             )
             headings.append((int(token.tag[1:]), text))
+            sections.append(Section(int(token.tag[1:]), text, ""))
+            section_bodies.append([])
+            plain.append(inline_text(inline.children, with_code=False))
             base = "".join(
                 char for char in text.lower()
                 if char in "-_ " or unicodedata.category(char)[0] not in "PSZC"
@@ -130,9 +175,122 @@ def parse_document(body: str) -> Document:
             html.feed(token.content)
         if token.type == "inline":
             read_inline(token.children)
+            if tokens[index - 1].type != "heading_open":
+                plain.append(inline_text(token.children, with_code=False))
+                if section_bodies:
+                    section_bodies[-1].append(inline_text(token.children, with_code=True))
     links.extend(html.links)
     anchors.update(html.anchors)
-    return Document(body, headings, links, anchors)
+    for section, parts in zip(sections, section_bodies):
+        section.body = "\n".join(parts)
+    return Document(body, headings, links, anchors, sections, re.sub(r"\s+", " ", " ".join(plain)))
+
+
+def rule_shape_errors(document: Document) -> list[str]:
+    """Check each rule in an Engineering Standard concept for the REAS rule shape."""
+    errors = []
+    sections = document.sections
+    for index, section in enumerate(sections):
+        match = RULE.match(section.text)
+        if match is None:
+            continue
+        rule = match.group(1)
+        if section.level != 2:
+            errors.append(f"{rule}: Rule heading must be level 2")
+            continue
+        children = []
+        for later in sections[index + 1:]:
+            if later.level <= 2:
+                break
+            if later.level == 3:
+                children.append(later)
+        names = [child.text for child in children]
+        expected = list(RULE_SECTIONS[:4])
+        if OPTIONAL_RULE_SECTION in names:
+            expected.append(OPTIONAL_RULE_SECTION)
+        expected.append(RULE_SECTIONS[4])
+        if names != expected:
+            errors.append(
+                f"{rule}: Sections must be Intent, Enforcement, Scope, Rules, "
+                f"[Allowances], Verification; found {', '.join(names) or 'none'}"
+            )
+            continue
+        for child in children:
+            if not child.body.strip():
+                errors.append(f"{rule}: {child.text} section is empty")
+            elif child.text == "Enforcement" and child.body.strip() not in ENFORCEMENT_VALUES:
+                errors.append(f"{rule}: Enforcement must be 'Required.' or 'Advisory.'")
+    quality = [s for s in sections if s.level == 2 and s.text == QUALITY_TEST]
+    if not quality:
+        errors.append(f"Missing '{QUALITY_TEST}' section")
+    elif not quality[0].body.strip():
+        errors.append(f"'{QUALITY_TEST}' section is empty")
+    return errors
+
+
+def retired_terms(text: str) -> list[tuple[str, str]] | None:
+    """Read the Retired terms table from the terminology concept.
+
+    Return None when the section is absent, else the (term, replacement) rows.
+    """
+    lines = text.splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == RETIRED_TERMS_HEADING)
+    except StopIteration:
+        return None
+    rows = []
+    table_lines = []
+    for line in lines[start + 1:]:
+        if line.startswith("#"):
+            break
+        if line.lstrip().startswith("|"):
+            table_lines.append(line)
+    for line in table_lines[2:]:
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) >= 2 and cells[0]:
+            rows.append((cells[0], cells[1]))
+    return rows
+
+
+def parse_updated(value) -> date | None:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value)
+        except ValueError:
+            return None
+    return None
+
+
+def freshness_warnings(root: Path, today: date | None = None) -> list[str]:
+    """Report concepts whose `updated` date is older than the threshold for their type."""
+    today = today or date.today()
+    root = root.resolve()
+    bundle = root / "standard"
+    warnings = []
+    if not bundle.is_dir():
+        return warnings
+    for path in sorted(bundle.rglob("*.md")):
+        if path.name in {"index.md", "log.md"}:
+            continue
+        try:
+            meta, _, _ = split_frontmatter(path.read_text(encoding="utf-8"))
+        except (UnicodeError, OSError):
+            continue
+        if not isinstance(meta, dict) or "updated" not in meta:
+            continue
+        updated = parse_updated(meta["updated"])
+        if updated is None or updated > today:
+            continue
+        limit = FRESHNESS_DAYS.get(meta.get("type"), FRESHNESS_DEFAULT_DAYS)
+        age = (today - updated).days
+        if age > limit:
+            rel = path.relative_to(root).as_posix()
+            warnings.append(f"{rel}: updated {updated} is {age} days old; the limit for {meta.get('type')} is {limit}")
+    return warnings
 
 
 def valid_timestamp(value) -> bool:
@@ -178,7 +336,8 @@ def metadata_errors(meta: dict) -> list[str]:
     return errors
 
 
-def validate(root: Path) -> list[str]:
+def validate(root: Path, today: date | None = None) -> list[str]:
+    today = today or date.today()
     root = root.resolve()
     bundle = root / "standard"
     if not bundle.is_dir():
@@ -188,6 +347,7 @@ def validate(root: Path) -> list[str]:
     concepts = set()
     seen = {}
     graph = {}
+    terminology_text = None
     for path in sorted(root.rglob("*.md")):
         if any(part in {".git", "target", ".venv"} for part in path.relative_to(root).parts):
             continue
@@ -227,8 +387,18 @@ def validate(root: Path) -> list[str]:
                     errors.append(f"{rel}: Concept requires a non-empty type")
                 if meta:
                     errors.extend(f"{rel}: {error}" for error in metadata_errors(meta))
+                    if "updated" in meta:
+                        updated = parse_updated(meta["updated"])
+                        if updated is None:
+                            errors.append(f"{rel}: Invalid updated: use YYYY-MM-DD")
+                        elif updated > today:
+                            errors.append(f"{rel}: updated {updated} is in the future")
+                    if meta.get("type") == RULE_TYPE:
+                        errors.extend(f"{rel}: {error}" for error in rule_shape_errors(document))
                 if not body.strip():
                     errors.append(f"{rel}: Empty concept")
+                if rel == TERMINOLOGY:
+                    terminology_text = body
         for _, heading in document.headings:
             if not heading.startswith("REAS-"):
                 continue
@@ -289,6 +459,21 @@ def validate(root: Path) -> list[str]:
             pending.extend(graph.get(path, set()) - reachable)
         for path in sorted(concepts - reachable):
             errors.append(f"{path.relative_to(root)}: Concept is not reachable from standard/index.md")
+    if terminology_text is not None:
+        retired = retired_terms(terminology_text)
+        if retired is None:
+            errors.append(f"{TERMINOLOGY}: Retired terms section is missing")
+        elif not retired:
+            errors.append(f"{TERMINOLOGY}: Retired terms table is empty")
+        else:
+            for path, document in documents.items():
+                rel = path.relative_to(root).as_posix()
+                if rel in RETIRED_TERM_EXEMPT:
+                    continue
+                plain = document.plain.lower()
+                for term, replacement in retired:
+                    if term.lower() in plain:
+                        errors.append(f"{rel}: Retired term '{term}'; use {replacement}")
     if not seen:
         errors.append("No REAS rule IDs found")
     return errors
@@ -297,14 +482,22 @@ def validate(root: Path) -> list[str]:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--strict-freshness", action="store_true",
+                        help="treat a stale concept as an error instead of a warning")
     args = parser.parse_args()
     errors = validate(args.root)
+    warnings = freshness_warnings(args.root)
+    for warning in warnings:
+        print("WARN:", warning)
+    if args.strict_freshness:
+        errors.extend(warnings)
     for error in errors:
         print("ERROR:", error)
     if errors:
         print(f"FAIL: {len(errors)} errors")
         return 1
-    print("PASS: REAS frontmatter profile, index reachability, rule declarations, local links and fragments")
+    print("PASS: REAS frontmatter profile, index reachability, rule declarations and shape, "
+          "quality tests, retired terms, local links and fragments")
     print("NOT CHECKED: full OKF conformance, STE language, external URLs, technical accuracy, historical ID reuse")
     return 0
 

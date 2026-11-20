@@ -3,6 +3,7 @@ type: Engineering Standard
 title: Security at seams
 description: Trust boundaries, sizes from outside data, unsafe code, duplicate implementations, and output encoding.
 tags: [security, rust, trust-boundary, unsafe, simd]
+updated: 2026-11-20
 ---
 
 # Security at seams
@@ -20,6 +21,22 @@ An application that accepts anonymous or authenticated input from other parties 
 <a id="reas-sec-001"></a>
 ## REAS-SEC-001: Test security properties
 
+### Intent
+
+Credentials, limits, authentication, and dependencies fail quietly.
+Each needs a check that runs without a person remembering it.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every application with an endpoint, a credential, or a third-party dependency.
+A private tool records an exception for the CI jobs as the exposure clause above describes.
+
+### Rules
+
 Keep credentials out of source code and logs.
 Set limits on request size, connection count, and execution time.
 Apply each limit before the allocation or the work that it bounds.
@@ -30,21 +47,42 @@ Enforce authorization for each protected operation.
 Model each authentication and verification step as a state, as [REAS-STATE-002](state-machines.md#reas-state-002) specifies.
 Document each trust assumption based on local access.
 Do not trust a caller only because it uses a loopback address.
+Before you implement a component that handles payments, personal data, or credentials, or that faces the internet, record a design review against least privilege, fail-safe defaults, complete mediation, and defense in depth, with a stated reason for each item marked not applicable.
 
-Run a dependency vulnerability scan with `cargo audit` or `cargo deny` in CI.
+Run a dependency vulnerability scan with `cargo deny check` in CI.
 Run it on each pull request and on a schedule, because advisories arrive without a code change.
+Restrict dependency sources to the registries you approve in the `sources` section of `deny.toml`.
+A dependency with a build script or a proc-macro runs code on the build machine; review that code before you add the dependency, and record the review.
+Prefer a version published more than a few days ago; flag a version published within days of the change for operator review.
 List each dependency that reads outside data and contains `unsafe` code.
-Review that unsafe code, or replace the dependency, before the first release that uses it.
-`cargo geiger` counts unsafe items; it does not review them.
-Document the project's own unsafe code as [REAS-SEC-004](#reas-sec-004) specifies.
+Review that unsafe code with `cargo vet` or a recorded manual review, or replace the dependency, before the first release that uses it.
+`cargo geiger` counts unsafe items; it does not review them. [REAS-NATIVE-002](native-code.md#reas-native-002) owns the count and its baseline.
+Document the project's own unsafe code as [REAS-SEC-004](#reas-sec-004) specifies, and treat every crossing into native code as [Native code](native-code.md) specifies.
 
-Verification:
+### Verification
 
-- CI: a `cargo deny check` or `cargo audit` job on pull requests and on a daily schedule.
+- CI: a `cargo deny check` job on pull requests and on a daily schedule.
+- Review question: which new dependencies carry a build script or a proc-macro, and where is their review recorded?
 - Review question: which dependencies touch outside data, and which of them contain `unsafe`?
 
 <a id="reas-sec-002"></a>
 ## REAS-SEC-002: Parse outside data at the trust boundary
+
+### Intent
+
+Data that another party wrote is a claim, not a fact.
+When the inbound adapter turns it into a validated type once, every function behind the adapter can trust its parameters.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every byte that enters the application from another party, including stored user data read back from the application's own database.
+Does not apply to constants and configuration that the operator controls.
+
+### Rules
 
 Outside data is data that a party other than this application wrote.
 This includes request bodies, uploads, webhooks, email, message-queue payloads, configuration files from users, and stored user data that the application reads back from its own database.
@@ -57,6 +95,7 @@ Give each port method and each domain function parameters of validated types onl
 Do not pass `String`, `Vec<u8>`, `serde_json::Value`, or an unvalidated integer across a port when the value has an invariant.
 Order the steps: decode the transport frame, verify the origin, then parse the payload.
 Do not parse a payload before its origin is verified, when a verification step exists.
+Inside the payload, check in this order and stop at the first failure: presence, then format, then range, then cross-field consistency, then uniqueness and references that need a query.
 
 Make an invalid value impossible to construct:
 
@@ -68,7 +107,12 @@ Make an invalid value impossible to construct:
 
 All safe public construction paths must preserve the invariant, as [REAS-RUST-001](core-rust.md#reas-rust-001) specifies.
 
-Verification:
+Report a validation failure at two levels.
+The caller receives what failed and what a valid value looks like, with no internal detail.
+The log receives the rule, the rejected value after [REAS-SEC-006](#reas-sec-006) encoding, and the request context.
+For an authentication or authorization failure, the caller receives a generic message and a reference identifier; the log receives the detail.
+
+### Verification
 
 - Review question: for each port method, which parameter carries outside data, and which constructor validated it?
 - Test: one rejection test for each invariant through the deserializer, not only through the constructor.
@@ -77,8 +121,23 @@ Verification:
 <a id="reas-sec-003"></a>
 ## REAS-SEC-003: Compute sizes from outside data once, with checked arithmetic
 
-A length, count, or offset from outside data is a number, not a fact about the buffer.
-Convert it to `usize` with `usize::try_from`.
+### Intent
+
+A length from outside data is a number, not a fact about the buffer.
+Two pieces of code that compute the same offset can disagree, and the one that is wrong writes past the end.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every length, count, offset, or index that comes from outside data, and to every regular expression applied to outside data.
+Does not apply to sizes the compiler knows, such as array lengths.
+
+### Rules
+
+Convert a length from outside data to `usize` with `usize::try_from`.
 Compare it with the limit from REAS-SEC-001 before any allocation or loop that it bounds.
 Compute each derived offset with `checked_add`, `checked_mul`, or `checked_sub`.
 Return a typed error when the computation fails or the offset is outside the buffer.
@@ -90,9 +149,13 @@ Do not use `[start..end]` for that range.
 
 Set `overflow-checks = true` in the release profile of each crate that handles outside data.
 Then an unchecked overflow panics instead of wrapping silently.
-Declare the lint settings in `Cargo.toml` under `[lints.clippy]`, so that they are visible with the profile.
+Declare the lint settings under `[workspace.lints]`, as [REAS-RUST-006](core-rust.md#reas-rust-006) specifies, so that they are visible with the profile.
 
-Verification:
+Apply only a linear-time regular expression engine to outside data.
+The `regex` crate is linear-time; a backtracking engine such as `fancy-regex` can be driven to exponential time by a crafted input.
+Set `size_limit` on each compiled pattern that outside data reaches.
+
+### Verification
 
 - Lint: `clippy::arithmetic_side_effects` and `clippy::indexing_slicing` set to `deny` for the crate or module that reads outside data.
 - Review question: is the same length computed in two places?
@@ -101,6 +164,22 @@ Verification:
 
 <a id="reas-sec-004"></a>
 ## REAS-SEC-004: Confine unsafe code
+
+### Intent
+
+An `unsafe` block is a promise the compiler cannot check.
+One small module with a safe API keeps every such promise in one place a reviewer can read.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every crate.
+Does not apply to generated bindings whose generator is recorded and reviewed.
+
+### Rules
 
 Set `unsafe_code = "forbid"` under `[lints.rust]` in each crate.
 When an operation needs `unsafe`, change that setting to `deny` for the crate and allow it in one module.
@@ -119,20 +198,33 @@ State the conditions and why they hold at that point.
 Do one unsafe operation in each `unsafe` block.
 For each public unsafe function, document the caller's obligations in a `# Safety` section.
 For an unsafe abstraction, test the boundary conditions.
-Run Miri on the module's tests in CI.
-Where Miri cannot run, for example across FFI, run AddressSanitizer.
-Record the Miri and sanitizer results, including checks that did not run.
+Exercise the module under Miri and, where Miri cannot execute the path, under a sanitizer, as [REAS-NATIVE-004](native-code.md#reas-native-004) specifies.
 
-Verification:
+### Verification
 
 - Lint: the rustc `unsafe_code` lint; `clippy::undocumented_unsafe_blocks` and `clippy::multiple_unsafe_ops_per_block` set to `deny`.
-- CI: `cargo miri test` for the crate that contains the module.
+- CI: the Miri and sanitizer jobs of [REAS-NATIVE-004](native-code.md#reas-native-004).
 - Review question: which line of the safe API checks each precondition, and which `SAFETY` comment depends on it?
 
 <a id="reas-sec-005"></a>
 ## REAS-SEC-005: Verify duplicate implementations against the reference
 
-A fast path, a cache, a SIMD version, or a hand-unrolled loop is a second implementation of the same function.
+### Intent
+
+A fast path is a second implementation of the same function, and the two can disagree on an input neither author tried.
+The reference implementation is the specification; the differential test is the proof.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every fast path, cache, SIMD version, or hand-unrolled loop that duplicates a simpler implementation.
+Does not apply to a single implementation with no duplicate.
+
+### Rules
+
 Keep the simple implementation as the reference.
 Keep it compiled and tested.
 Write a differential test that calls both implementations with the same generated inputs and compares the results.
@@ -141,14 +233,14 @@ Assert the same equality in the fuzz target from [REAS-TEST-003](validation.md#r
 
 For a block-wise or SIMD loop, prove the bound before each full-width access.
 The remaining length must be at least the block width.
-Put that check in the loop condition or in a `chunks_exact` call.
+Put that check in the loop condition or in a `chunks_exact` or `as_chunks` call.
 Do not put it after the access.
 Process the scalar tail with the reference implementation.
 Do not process it with a masked or partial block.
 For a cache, test that a hit and a miss return the same value.
 Test that invalidation after a change to the source returns the new value.
 
-Verification:
+### Verification
 
 - Test: a differential test in the unit test suite.
 - CI: run the differential test on each CPU architecture and target-feature set that the code deploys to.
@@ -156,6 +248,22 @@ Verification:
 
 <a id="reas-sec-006"></a>
 ## REAS-SEC-006: Encode output for its context
+
+### Intent
+
+Each output context treats different characters as syntax.
+Only the code that writes to a context knows which encoding it needs, so encoding belongs there and nowhere earlier.
+
+### Enforcement
+
+Required.
+
+### Scope
+
+Applies to every value the application writes into HTML, a URL, JSON, SQL, a shell command, a log line, or an HTTP header.
+Does not apply to a value that never leaves the process.
+
+### Rules
 
 Validate on input.
 Encode on output.
@@ -172,7 +280,7 @@ It destroys valid data, or it misses the characters that the real context treats
 Store the validated value as the user entered it.
 Treat a stored value as outside data when the application reads it back, as REAS-SEC-002 specifies.
 
-Verification:
+### Verification
 
 - Review question: list each output sink and the encoder that writes to it.
 - Test: one test for each sink with a value that contains that sink's special characters.
@@ -180,3 +288,7 @@ Verification:
 
 The [trust-boundary example](../examples/trust-boundary/) demonstrates REAS-SEC-002, REAS-SEC-003, REAS-SEC-004, and REAS-SEC-005 in one inbound adapter.
 It does not demonstrate output encoding or a dependency scan.
+
+## Quality test
+
+Where does each byte of outside data become a validated type, and which single check does each seam depend on?

@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.7.0-draft: 2026-11-20
+
+- Added [Native code](standard/native-code.md) and the `REAS-NATIVE` family. REAS-NATIVE-001 states the principle: crossing into unsafe, FFI, SIMD, or inline assembly changes the engineer's obligations, and the crossing itself triggers a standing response to bound, mark, and exercise the code. The practices are framed as a floor that clears mechanical failure classes so judgment can go to the seams no tool watches.
+- REAS-NATIVE-002 bounds the unsafe surface with a committed per-crate baseline that only shrinks, currently enforced by `cargo geiger` in CI. REAS-NATIVE-003 states the confine-and-mark habit and cites REAS-SEC-004 for the mechanics. REAS-NATIVE-004 exercises native paths: fuzz targets on outside bytes, Miri on modules with unsafe, Miri-blind marks and sanitizer builds on named hardware for what Miri cannot execute.
+- The Miri sentences of REAS-SEC-004 moved to REAS-NATIVE-004; the identifier policy records the split. REAS-SEC-001 and REAS-RUST-004 point to the new family.
+- Terminology gains FFI, inline assembly, Miri, Miri-blind, native code, sanitizer, and target feature.
+- The self-audit records the native surface of the examples: no unsafe, no FFI, one portable SWAR path, no CPU-gated path.
+
+## 1.6.0-draft: 2026-11-20
+
+- Gave every rule one shape: Intent, Enforcement as Required or Advisory, Scope with what the rule does not apply to, Rules, optional Allowances, and Verification naming the lint, CI job, or review question. Each Engineering Standard concept ends with a Quality test question. The checker enforces both.
+- Added REAS-DOC-006: enforce with a check where a check can exist, with a floor, a planted-violation test, and shrink-only baselines.
+- Added a retired-terms table to the terminology concept; the checker fails on a retired term outside the exempt documents. Added `updated` dates to every concept with freshness thresholds by type; a stale concept is a warning.
+- Core Rust: REAS-RUST-005 now separates library errors from binary context. REAS-RUST-001 covers `#[non_exhaustive]` and `cargo semver-checks`. REAS-RUST-006 covers workspace lints and `#[expect]` over `#[allow]`. New REAS-RUST-008 on money and REAS-RUST-009 on documenting public items.
+- Persistence: REAS-DATA-001 keeps serde and SQLx attributes off domain types. REAS-DATA-004 covers MSRV and feature powersets. New REAS-DATA-005 on idempotent consumers. REAS-STATE-003 names the fencing token.
+- Validation: REAS-TEST-001 adds non-vacuity rules and mutation-aware test design. REAS-TEST-002 reports six outcomes. New REAS-TEST-004 on doubling only at ports and REAS-TEST-005 on failing-test triage.
+- Security: REAS-SEC-001 covers build scripts and proc-macros as build-time code, dependency sources, and a design review for sensitive components. REAS-SEC-002 adds the validation order and two-level error feedback. REAS-SEC-003 covers linear-time regular expressions.
+- Architecture: REAS-ARCH-004 names the storage-shaped port. REAS-ARCH-002 gains a dependency-graph check.
+- Documentation: REAS-DOC-002 defines authority classes for committed files and the freshness rule. REAS-DOC-003 adds the rule-writing voice. REAS-DOC-004 adds requirement shapes.
+- Added `scripts/check.sh` as the one list of this repository's checks; CI, the README, and the agent files point at it. CI gained an MSRV job, the fuzz crate's lint, and the documentation build with warnings denied.
+- Examples declare `rust-version = "1.88"`, forbid `unsafe`, warn on missing docs, and document every public item. The trust-boundary tests assert exact error messages.
+- CLAUDE.md and AGENTS.md gained negative scope and stopping conditions.
+
 ## 1.5.0-draft: 2026-11-18
 
 - Added [Security at seams](standard/security.md): REAS-SEC-002 trust boundaries and validated types, REAS-SEC-003 sizes from outside data with checked arithmetic, REAS-SEC-004 confined unsafe code, REAS-SEC-005 duplicate implementations against a reference, and REAS-SEC-006 output encoding.

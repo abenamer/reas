@@ -65,31 +65,53 @@ pub mod frame {
 
     use std::fmt;
 
+    /// Length of the big-endian payload-length prefix.
     pub const HEADER_LEN: usize = 4;
+    /// Length of the tag that follows the payload.
     pub const TAG_LEN: usize = 8;
 
     /// Resource limit (REAS-SEC-001). The parser compares the declared length
     /// with this limit before it allocates.
     pub const MAX_PAYLOAD_LEN: usize = 64 * 1024;
 
+    /// A decoded frame: payload and tag. The payload is within `MAX_PAYLOAD_LEN`.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct Frame {
         payload: Vec<u8>,
         tag: [u8; TAG_LEN],
     }
 
+    /// Why a byte sequence is not a frame.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum FrameError {
         /// Fewer than `HEADER_LEN` bytes.
-        TruncatedHeader { len: usize },
+        TruncatedHeader {
+            /// Bytes received.
+            len: usize,
+        },
         /// The declared length is above `MAX_PAYLOAD_LEN`.
-        PayloadTooLong { len: usize, max: usize },
+        PayloadTooLong {
+            /// Declared payload length.
+            len: usize,
+            /// The limit.
+            max: usize,
+        },
         /// The declared length does not fit `usize`, or an offset overflowed.
         LengthOverflow,
         /// The buffer ends before the declared payload and tag.
-        Truncated { expected: usize, actual: usize },
+        Truncated {
+            /// Bytes the declared frame needs.
+            expected: usize,
+            /// Bytes received.
+            actual: usize,
+        },
         /// The buffer continues after the tag.
-        TrailingBytes { expected: usize, actual: usize },
+        TrailingBytes {
+            /// Bytes the declared frame occupies.
+            expected: usize,
+            /// Bytes received.
+            actual: usize,
+        },
     }
 
     impl fmt::Display for FrameError {
@@ -118,6 +140,9 @@ pub mod frame {
         /// Builds a frame from trusted parts. The one invariant, the payload
         /// limit, is checked here too, so `to_bytes` cannot produce a frame
         /// that `parse` rejects.
+        ///
+        /// # Errors
+        /// Returns [`FrameError::PayloadTooLong`] above `MAX_PAYLOAD_LEN`.
         pub fn new(payload: Vec<u8>, tag: [u8; TAG_LEN]) -> Result<Self, FrameError> {
             if payload.len() > MAX_PAYLOAD_LEN {
                 return Err(FrameError::PayloadTooLong {
@@ -131,6 +156,9 @@ pub mod frame {
         /// Parses outside bytes. The declared length is converted once,
         /// compared with the limit once, and each offset is computed once
         /// with checked arithmetic (REAS-SEC-003).
+        ///
+        /// # Errors
+        /// Returns a [`FrameError`] that names the first check that failed.
         pub fn parse(bytes: &[u8]) -> Result<Self, FrameError> {
             let header = bytes
                 .get(..HEADER_LEN)
@@ -194,10 +222,12 @@ pub mod frame {
             out
         }
 
+        /// The payload bytes.
         pub fn payload(&self) -> &[u8] {
             &self.payload
         }
 
+        /// The tag bytes.
         pub fn tag(&self) -> &[u8; TAG_LEN] {
             &self.tag
         }
@@ -222,7 +252,9 @@ pub mod webhook {
     /// Marker trait for verification states. Only this crate can implement it.
     pub trait VerificationState: sealed::Sealed {}
 
+    /// The origin has not been verified.
     pub struct Unverified;
+    /// The origin has been verified.
     pub struct Verified;
 
     impl sealed::Sealed for Unverified {}
@@ -233,9 +265,14 @@ pub mod webhook {
     /// Outbound port for origin verification. The application defines it; a
     /// reviewed MAC implementation should sit behind it in production.
     pub trait TagVerifier {
+        /// Checks that `tag` authenticates `payload`.
+        ///
+        /// # Errors
+        /// Returns [`TagMismatch`] when it does not.
         fn verify(&self, payload: &[u8], tag: &[u8; TAG_LEN]) -> Result<(), TagMismatch>;
     }
 
+    /// The tag does not authenticate the payload.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct TagMismatch;
 
@@ -247,12 +284,14 @@ pub mod webhook {
 
     impl std::error::Error for TagMismatch {}
 
+    /// A received webhook whose verification state is its type parameter.
     pub struct Webhook<State: VerificationState> {
         frame: Frame,
         state: PhantomData<State>,
     }
 
     impl Webhook<Unverified> {
+        /// Wraps a decoded frame. Nothing about its origin is known yet.
         pub fn from_frame(frame: Frame) -> Self {
             Self {
                 frame,
@@ -261,6 +300,9 @@ pub mod webhook {
         }
 
         /// The only constructor of `Webhook<Verified>`.
+        ///
+        /// # Errors
+        /// Returns [`TagMismatch`] when the verifier rejects the tag.
         pub fn verify<V: TagVerifier>(
             self,
             verifier: &V,
@@ -275,6 +317,9 @@ pub mod webhook {
 
     impl Webhook<Verified> {
         /// The payload is parsed only after verification (REAS-SEC-002).
+        ///
+        /// # Errors
+        /// Returns [`PayloadError`] when the payload is not a valid event.
         pub fn into_event(self) -> Result<Event, PayloadError> {
             Event::from_json(self.frame.payload())
         }
@@ -282,6 +327,9 @@ pub mod webhook {
 
     /// Handler. It takes only the verified type, so a caller cannot skip
     /// `verify`.
+    ///
+    /// # Errors
+    /// Returns [`PayloadError`] when the payload is not a valid event.
     pub fn handle(webhook: Webhook<Verified>) -> Result<Event, PayloadError> {
         webhook.into_event()
     }
@@ -295,6 +343,7 @@ pub mod event {
 
     use serde::Deserialize;
 
+    /// Maximum length of an event name in bytes.
     pub const MAX_EVENT_NAME_LEN: usize = 64;
 
     /// Lowercase ASCII letters, digits, `_`, and `.`; 1 to 64 bytes.
@@ -302,11 +351,25 @@ pub mod event {
     #[serde(try_from = "String")]
     pub struct EventName(String);
 
+    /// Why a string is not an event name.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub enum InvalidEventName {
+        /// The name is empty.
         Empty,
-        TooLong { len: usize, max: usize },
-        InvalidByte { index: usize, byte: u8 },
+        /// The name is longer than `MAX_EVENT_NAME_LEN`.
+        TooLong {
+            /// Length in bytes.
+            len: usize,
+            /// The limit.
+            max: usize,
+        },
+        /// The name contains a byte outside the allowed set.
+        InvalidByte {
+            /// Position of the byte.
+            index: usize,
+            /// The byte.
+            byte: u8,
+        },
     }
 
     impl fmt::Display for InvalidEventName {
@@ -356,15 +419,19 @@ pub mod event {
     }
 
     impl EventName {
+        /// The validated name.
         pub fn as_str(&self) -> &str {
             &self.0
         }
     }
 
+    /// A domain event decoded from a verified payload.
     #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
     #[serde(deny_unknown_fields)]
     pub struct Event {
+        /// The validated event name.
         pub name: EventName,
+        /// Delivery attempt, starting at 1.
         pub attempt: u32,
     }
 
@@ -385,6 +452,11 @@ pub mod event {
     }
 
     impl Event {
+        /// Decodes an event from JSON. `EventName` validates through serde.
+        ///
+        /// # Errors
+        /// Returns [`PayloadError`] for invalid JSON, an unknown field, or an
+        /// invalid event name.
         pub fn from_json(payload: &[u8]) -> Result<Self, PayloadError> {
             serde_json::from_slice(payload).map_err(PayloadError)
         }
@@ -454,10 +526,12 @@ pub mod doubles {
     }
 
     impl XorTagVerifier {
+        /// Creates a verifier with the given key byte.
         pub fn new(key: u8) -> Self {
             Self { key }
         }
 
+        /// Computes the tag this verifier accepts for `payload`.
         pub fn tag_for(&self, payload: &[u8]) -> [u8; TAG_LEN] {
             let mut tag = [self.key; TAG_LEN];
             for (slot, &byte) in (0..TAG_LEN).cycle().zip(payload) {
@@ -490,10 +564,15 @@ pub mod inbound {
     use crate::frame::{Frame, FrameError};
     use crate::webhook::{handle, TagMismatch, TagVerifier, Webhook};
 
+    /// Why outside bytes did not become an event. Each variant names the
+    /// step that refused them.
     #[derive(Debug)]
     pub enum ReceiveError {
+        /// The bytes are not a frame.
         Frame(FrameError),
+        /// The tag does not authenticate the payload.
         Tag(TagMismatch),
+        /// The payload is not a valid event.
         Payload(PayloadError),
     }
 
@@ -537,6 +616,9 @@ pub mod inbound {
 
     /// Decode the frame, verify the origin, then parse the payload. The
     /// order is fixed by the types: `handle` needs a `Webhook<Verified>`.
+    ///
+    /// # Errors
+    /// Returns the [`ReceiveError`] of the first step that refused the bytes.
     pub fn receive<V: TagVerifier>(bytes: &[u8], verifier: &V) -> Result<Event, ReceiveError> {
         let frame = Frame::parse(bytes)?;
         let verified = Webhook::from_frame(frame).verify(verifier)?;
@@ -760,9 +842,9 @@ mod tests {
     #[test]
     fn deserializer_uses_the_same_validation_as_the_constructor() {
         let err = Event::from_json(br#"{"name":"Order","attempt":1}"#).expect_err("uppercase");
-        assert!(
-            err.to_string().contains("invalid byte 0x4f at index 0"),
-            "{err}"
+        assert_eq!(
+            err.to_string(),
+            "invalid event payload: event name has invalid byte 0x4f at index 0 at line 1 column 15"
         );
     }
 
@@ -770,13 +852,19 @@ mod tests {
     fn deserializer_rejects_an_unknown_field() {
         let err = Event::from_json(br#"{"name":"order.paid","attempt":1,"admin":true}"#)
             .expect_err("unknown field");
-        assert!(err.to_string().contains("unknown field"), "{err}");
+        assert_eq!(
+            err.to_string(),
+            "invalid event payload: unknown field `admin`, expected `name` or `attempt` at line 1 column 40"
+        );
     }
 
     #[test]
     fn deserializer_rejects_a_negative_attempt() {
         let err = Event::from_json(br#"{"name":"order.paid","attempt":-1}"#).expect_err("negative");
-        assert!(err.to_string().contains("invalid value"), "{err}");
+        assert_eq!(
+            err.to_string(),
+            "invalid event payload: invalid value: integer `-1`, expected u32 at line 1 column 33"
+        );
     }
 
     // Duplicate implementation against the reference (REAS-SEC-005).
