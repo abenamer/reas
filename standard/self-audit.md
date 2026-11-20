@@ -46,6 +46,7 @@ Every job runs one subcommand of `scripts/check.sh`, so this table and the workf
 | `examples/trust-boundary/fuzz/**` | `rust-examples`, `nightly-doctests` | Clippy and rustfmt on stable; build and a 30-second run on nightly |
 | Compile-fail doctests | `nightly-doctests` | Expected diagnostic codes asserted |
 | `scripts/check.sh` | every job | A defect in the script fails every job |
+| Native paths ([REAS-NATIVE-002](native-code.md#reas-native-002), [REAS-NATIVE-004](native-code.md#reas-native-004)) | `rust-examples` | Every example sets `unsafe_code = "forbid"`, so the count is zero by construction and the compiler is the counter; no FFI; the one fast path, the SWAR checksum, is portable integer arithmetic with no target feature, so no path is CPU-gated, Miri is not required, and no path is Miri-blind. `cargo geiger` was not run. |
 | `.github/workflows/docs.yml` | none beyond its own execution | Not gated by a workflow linter. A syntax error fails every job; a wrong step name does not. |
 | `LICENSE-*`, `.gitignore`, `rust-toolchain.toml` | none | Not gated. The toolchain file is read by every Cargo job but its content is not asserted. |
 

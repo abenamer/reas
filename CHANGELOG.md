@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.0-draft: 2026-11-20
+
+- Added [Native code](standard/native-code.md) and the `REAS-NATIVE` family. REAS-NATIVE-001 states the principle: crossing into unsafe, FFI, SIMD, or inline assembly changes the engineer's obligations, and the crossing itself triggers a standing response to bound, mark, and exercise the code. The practices are framed as a floor that clears mechanical failure classes so judgment can go to the seams no tool watches.
+- REAS-NATIVE-002 bounds the unsafe surface with a committed per-crate baseline that only shrinks, currently enforced by `cargo geiger` in CI. REAS-NATIVE-003 states the confine-and-mark habit and cites REAS-SEC-004 for the mechanics. REAS-NATIVE-004 exercises native paths: fuzz targets on outside bytes, Miri on modules with unsafe, Miri-blind marks and sanitizer builds on named hardware for what Miri cannot execute.
+- The Miri sentences of REAS-SEC-004 moved to REAS-NATIVE-004; the identifier policy records the split. REAS-SEC-001 and REAS-RUST-004 point to the new family.
+- Terminology gains FFI, inline assembly, Miri, Miri-blind, native code, sanitizer, and target feature.
+- The self-audit records the native surface of the examples: no unsafe, no FFI, one portable SWAR path, no CPU-gated path.
+
 ## 1.6.0-draft: 2026-11-20
 
 - Gave every rule one shape: Intent, Enforcement as Required or Advisory, Scope with what the rule does not apply to, Rules, optional Allowances, and Verification naming the lint, CI job, or review question. Each Engineering Standard concept ends with a Quality test question. The checker enforces both.

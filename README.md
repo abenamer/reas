@@ -2,7 +2,7 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.6.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.7.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
 
 ## Read the standard
 
@@ -16,6 +16,7 @@ For AI coding agents, use [CLAUDE.md](CLAUDE.md) or [AGENTS.md](AGENTS.md).
 - [Persistence and transactions](standard/persistence.md)
 - [Validation and evidence](standard/validation.md)
 - [Security at seams](standard/security.md)
+- [Native code](standard/native-code.md)
 - [Documentation](standard/documentation.md)
 - [Technical terminology](standard/terminology.md)
 - [Self-audit and limitations](standard/self-audit.md)
