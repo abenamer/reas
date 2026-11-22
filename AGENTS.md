@@ -1,6 +1,6 @@
 # REAS agent instructions
 
-Start at [the standard index](standard/index.md).
+Start at [Foundations](standard/foundations.md), then [the standard index](standard/index.md).
 Load the rules that apply to the task; each rule's Scope says where it applies.
 Keep domain behavior, states, ports, and adapters easy to locate.
 For private projects, use the architecture questions in [REAS-ARCH-003](standard/ports-and-adapters.md#reas-arch-003).

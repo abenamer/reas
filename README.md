@@ -2,14 +2,15 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.7.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.8.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
 
 ## Read the standard
 
-Start with the [REAS knowledge index](standard/index.md). Open only the rules that apply to your project.
+Start with [Foundations](standard/foundations.md), then the [REAS knowledge index](standard/index.md). Open only the rules that apply to your project.
 
 For AI coding agents, use [CLAUDE.md](CLAUDE.md) or [AGENTS.md](AGENTS.md).
 
+- [Foundations](standard/foundations.md)
 - [Core Rust](standard/core-rust.md)
 - [Ports and adapters](standard/ports-and-adapters.md)
 - [State machines](standard/state-machines.md)
