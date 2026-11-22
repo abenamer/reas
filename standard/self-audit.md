@@ -3,17 +3,34 @@ type: Audit Report
 title: REAS self-audit
 description: Revision-specific validation evidence and remaining limitations.
 tags: [quality, documentation, audit]
-updated: 2026-11-20
+updated: 2026-11-22
 ---
 
 # REAS self-audit
 
-**Recorded validation: Actions run 24 passed for implementation commit `843b94d`.**
+**Recorded validation: Actions run 28 passed for implementation commit `64bdf70`.**
 
 The language review does not establish full ASD-STE100 compliance.
 See the [language-review record](ste-review.md) for its scope and open checks.
 
 ## Remote evidence for this revision
+
+[Actions run 28](https://github.com/abenamer/reas/actions/runs/45064945526) passed on 2026-11-22.
+Its source commit is `64bdf70` on `claude/zen-newton-74jyn8`, which added the Foundations concept and amended five rules; it changed no code, test, lockfile, workflow, or script.
+The job list and step conclusions were read from the Actions API after execution.
+Each row reports one of the six outcomes of [REAS-TEST-002](validation.md#reas-test-002); no job was skipped, retried, or timed out.
+
+| Job | Outcome | Evidence |
+| --- | --- | --- |
+| [docs](https://github.com/abenamer/reas/actions/runs/45064945526/job/137338897164) | Passed | 9 seconds, conclusion success, every step success |
+| [nightly-doctests](https://github.com/abenamer/reas/actions/runs/45064945526/job/137338897355) | Passed | 104 seconds, conclusion success, every step success |
+| [rust-examples](https://github.com/abenamer/reas/actions/runs/45064945526/job/137338897457) | Passed | 43 seconds, conclusion success, every step success |
+| [rust-examples-arm64](https://github.com/abenamer/reas/actions/runs/45064945526/job/137338897469) | Passed | 27 seconds, conclusion success, every step success |
+| [msrv](https://github.com/abenamer/reas/actions/runs/45064945526/job/137338897516) | Passed | 20 seconds, conclusion success, every step success |
+
+This audit section was added in the next commit.
+
+## Remote evidence for 1.7.0-draft
 
 [Actions run 24](https://github.com/abenamer/reas/actions/runs/44831443937) passed on 2026-11-20.
 Its source commit is `843b94d` on `claude/zen-newton-74jyn8`, which added the Native code concept and changed no code, test, lockfile, workflow, or script.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.0-draft: 2026-11-22
+
+- Added [Foundations](standard/foundations.md) and the `REAS-FOUND` family. The concept opens by acknowledging that AI-assisted development changed the economics of writing software for the better, so the standard raises its floor for early-stage work and holds its ceiling: no exception for a first version, and no structure added because it is cheap to generate.
+- REAS-FOUND-001 raises the floor and holds the ceiling. REAS-FOUND-002 forbids foreseeable rework, weighing decisions by expected cost over the service life, reversal cost, and propagation through later code. REAS-FOUND-003 makes the first instance of any pattern the template.
+- REAS-ARCH-003 gains a sixth question on reversal and propagation and reframes its rationale from the cost of files to the cost of reading. REAS-RUST-001 states it has no first-version exception. REAS-ARCH-004 and REAS-RUST-003 state that ease of generation is not evidence of need. REAS-DATA-001 asks for the production database engine from the first commit when it is a recorded requirement.
+- Terminology gains foreseeable rework, minimum viable product, recorded requirement, and service life. The index, README, CLAUDE.md, and AGENTS.md point to Foundations first.
+
 ## 1.7.0-draft: 2026-11-20
 
 - Added [Native code](standard/native-code.md) and the `REAS-NATIVE` family. REAS-NATIVE-001 states the principle: crossing into unsafe, FFI, SIMD, or inline assembly changes the engineer's obligations, and the crossing itself triggers a standing response to bound, mark, and exercise the code. The practices are framed as a floor that clears mechanical failure classes so judgment can go to the seams no tool watches.

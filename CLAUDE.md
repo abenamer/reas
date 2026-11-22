@@ -1,6 +1,6 @@
 # Claude instructions
 
-Start at [standard/index.md](standard/index.md).
+Start at [standard/foundations.md](standard/foundations.md), then [standard/index.md](standard/index.md).
 Apply the rules for the current task.
 Each rule states its Intent, Enforcement, Scope, Rules, and Verification; read the Scope before you apply it.
 
@@ -25,6 +25,7 @@ Each rule states its Intent, Enforcement, Scope, Rules, and Verification; read t
 - Do not add a prose rule where a check can exist; add the check, as [REAS-DOC-006](standard/documentation.md#reas-doc-006) specifies.
 - Do not decide product scope, security exposure, or the architecture of a private project; ask the maintainer.
 - Do not claim passing tests or full language compliance without evidence.
+- Do not defer engineering that is cheap to do now, and do not add structure because it is cheap to generate; see [REAS-FOUND-001](standard/foundations.md#reas-found-001).
 
 ## Stop and ask
 

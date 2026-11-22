@@ -27,6 +27,7 @@ Does not apply to an in-memory adapter.
 
 ### Rules
 
+Develop against the production database engine from the first commit when that engine is a recorded requirement; a container makes it as cheap as an embedded database, and it removes a predictable migration.
 Write a specific SQL query for each operation.
 Keep SQL in named concrete adapters.
 Version each schema change as a migration.
