@@ -190,8 +190,8 @@ Does not apply to test code, where `unwrap` and `expect` on a fixture are accept
 
 In a library crate, return `Result` with a typed error.
 Define one error enum for each module or crate surface, with one variant for each cause a caller can act on.
-Carry the data the caller needs to act.
-Wrap a lower-level error with `#[source]` or `#[from]` so that the error chain is kept.
+Carry the data the caller needs to act, and the data a person needs to start troubleshooting: the operation, the expected condition, and the observed one.
+Wrap a lower-level error with `#[source]` or `#[from]` so that the error chain is kept; the chain is the diagnostic trail from the boundary that failed back to its cause.
 `thiserror` is the usual derive.
 A type-erased error such as `anyhow::Error` does not appear in a library's public API.
 

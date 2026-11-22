@@ -28,6 +28,7 @@ RULE = re.compile(r"^(REAS-[A-Z]+-\d{3})(?=$|[\s:])")
 RULE_TYPE = "Engineering Standard"
 RULE_SECTIONS = ("Intent", "Enforcement", "Scope", "Rules", "Verification")
 OPTIONAL_RULE_SECTION = "Allowances"
+TRAILING_OPTIONAL_SECTION = "Limits"
 ENFORCEMENT_VALUES = ("Required.", "Advisory.")
 QUALITY_TEST = "Quality test"
 TERMINOLOGY = "standard/terminology.md"
@@ -209,10 +210,12 @@ def rule_shape_errors(document: Document) -> list[str]:
         if OPTIONAL_RULE_SECTION in names:
             expected.append(OPTIONAL_RULE_SECTION)
         expected.append(RULE_SECTIONS[4])
+        if TRAILING_OPTIONAL_SECTION in names:
+            expected.append(TRAILING_OPTIONAL_SECTION)
         if names != expected:
             errors.append(
                 f"{rule}: Sections must be Intent, Enforcement, Scope, Rules, "
-                f"[Allowances], Verification; found {', '.join(names) or 'none'}"
+                f"[Allowances], Verification, [Limits]; found {', '.join(names) or 'none'}"
             )
             continue
         for child in children:

@@ -2,7 +2,17 @@
 
 REAS is an opinionated engineering standard for Rust code. It favors explicit domain types, state machines, and **human-navigable ports and adapters**. It also defines rules for technical documentation.
 
-**Current version:** 1.8.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+**Current version:** 1.9.0-draft. This is a draft, not a Rust framework, a runtime dependency, or an officially certified standard.
+
+## What REAS is for
+
+REAS is an engineering instrument gauge, not an investigation framework.
+
+It sets a consistently high baseline for Rust engineering, runs routine correctness checks as bounded, automated steps, and makes meaningful departures from the baseline visible to the human who maintains the software. It keeps the diagnostic evidence behind each finding, so that when a person has to troubleshoot, they start with the affected component, the expected and observed behavior, and the error chain, not from scratch.
+
+AI-assisted development makes sound engineering practices cheap enough to apply from the first commit. It also produces more code, tests, and findings than a person can read. REAS exists to keep the engineering rigor high while keeping the information a human must absorb small: a routine pass needs its outcome and its evidence reference; a finding needs what changed, why it matters, how sure the evidence is, and whether it needs intervention. The decision to investigate further stays with the maintainer.
+
+High rigor underneath. Low information burden above. [Foundations](standard/foundations.md) states the principles in full.
 
 ## Read the standard
 

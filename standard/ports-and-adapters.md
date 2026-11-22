@@ -103,6 +103,7 @@ Before you select the architecture, ask these questions:
 4. How likely are the boundaries to change?
 5. Who can supply outside data to the application?
 6. Which decisions are costly to reverse, or will later code copy?
+7. Which components are consequential, and what is the one-sentence failure path for each, as [REAS-FOUND-004](foundations.md#reas-found-004) specifies?
 
 The answer to question 5 sets the exposure for the [security rules](security.md).
 The answer to question 6 names the decisions to make deliberately now, as [REAS-FOUND-002](foundations.md#reas-found-002) specifies; the rest stay reversible.
@@ -112,7 +113,7 @@ For other exceptions to REAS-ARCH-001, record the answers and the selected bound
 
 ### Verification
 
-- Record: the six answers appear in an architecture decision or in the project README.
+- Record: the seven answers appear in an architecture decision or in the project README.
 - Review question: has an answer changed since the architecture was selected?
 
 <a id="reas-arch-004"></a>
