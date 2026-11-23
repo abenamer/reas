@@ -3,12 +3,12 @@ type: Audit Report
 title: REAS self-audit
 description: Current evidence that this repository meets its own checks, and one line per earlier revision.
 tags: [quality, documentation, audit]
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 
 # REAS self-audit
 
-**Status: Actions [run 33](https://github.com/abenamer/reas/actions/runs/45085553036) passed for implementation commit `d1755c8` on 2026-11-22: five jobs, none skipped, retried, or timed out. Local checks passed on the same tree before the commit.**
+**Status: Actions [run 37](https://github.com/abenamer/reas/actions/runs/45090093920) passed for implementation commit `03bf2b4` on 2026-11-23: five jobs, none skipped, retried, or timed out. Local checks passed on the same tree before the commit.**
 
 This audit is an instrument reading, as [REAS-FOUND-005](foundations.md#reas-found-005) specifies.
 It holds the current revision's evidence and one line per earlier revision.
@@ -26,9 +26,9 @@ The language review does not establish full ASD-STE100 compliance; see the [lang
 | `scripts/check.sh rust`: trust-boundary example | Passed | check, 29 unit tests, 3 doctests, Clippy, rustfmt, doc build |
 | `scripts/check.sh rust`: fuzz crate Clippy and rustfmt | Passed | stable toolchain |
 | Mutation pass, trust-boundary example: `cargo mutants` | Completed; no pass criterion | Tool result: 69 mutants in 21 s, 52 killed, 16 unviable, 1 missed (`MAX_PAYLOAD_LEN`, `*` replaced with `+`). Maintainer disposition: the missed mutant is an accepted survivor, non-contractual configuration, noted at the constant. The test double is excluded by `.cargo/mutants.toml`; its acceptance and rejection paths have their own tests. |
-| `scripts/check.sh nightly`: expected diagnostic codes and the 30-second fuzz run | Passed in CI | run 33, `nightly-doctests` job; not run locally this revision |
-| MSRV `cargo +1.88.0 check` | Passed in CI | run 33, `msrv` job; not run locally this revision |
-| Differential tests on aarch64 | Passed in CI | run 33, `rust-examples-arm64` job; no aarch64 machine locally |
+| `scripts/check.sh nightly`: expected diagnostic codes and the 30-second fuzz run | Passed in CI | run 37, `nightly-doctests` job; not run locally this revision |
+| MSRV `cargo +1.88.0 check` | Passed in CI | run 37, `msrv` job; not run locally this revision |
+| Differential tests on aarch64 | Passed in CI | run 37, `rust-examples-arm64` job; no aarch64 machine locally |
 | `cargo deny check`, `cargo vet check` | Not run | Not installed; the examples are not applications under REAS-SEC-001's scope. |
 | Miri | Not run | Every example forbids `unsafe`; no native path exists. |
 | ASD-STE100 language review of the 1.9.0-draft text | Not run | See the review record. |
