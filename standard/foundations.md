@@ -225,7 +225,7 @@ Keep logs, test output, and analysis where a reader can reach them, and out of t
 Give a finding a starting point.
 At each engineering boundary, preserve the context that is cheap to keep and expensive to reconstruct: the affected component or operation, the expected behavior and the observed deviation, the error chain, the revision and environment, an identifier that connects the failure to the operation that caused it, and the check or event that exposed it.
 State which of these are established facts and which are suspected causes.
-Do not preserve sensitive data, credentials, or unbounded logs to do it.
+Do not preserve sensitive data, credentials, or unbounded logs to do it; redact or omit a sensitive value and keep the correlation identifier, because encoding a value for a log makes it safe for the log's syntax, not safe to disclose.
 The existing rules on errors, state transitions, and input handling say where this context comes from: [REAS-RUST-005](core-rust.md#reas-rust-005), [REAS-STATE-003](state-machines.md#reas-state-003), and [REAS-SEC-002](security.md#reas-sec-002).
 
 ### Verification

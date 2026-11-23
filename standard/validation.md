@@ -53,7 +53,7 @@ Design tests so that a mutation of the code under test fails them:
 - For each `>=`, `<=`, `<`, or `>` guard, test the value below the threshold, at the threshold, and above it.
 - Use inputs where an operator swap changes the result: `3` not `1` for multiplication, a nonzero value for addition.
 - For each `&&` or `||`, include a case where exactly one operand is true.
-- Assert the exact error message or the typed error variant, not a substring.
+- Assert the typed error variant and the diagnostic facts its message must carry, such as the identifiers and sizes a person needs. Pin exact wording only when the wording is itself a requirement, for example a message shown to a user or written into a contract.
 - Assert an observable outcome: a return value, a state change, or an effect. A test with no assertion cannot fail.
 
 Do not write a test for a constructor or an accessor alone; a behavior test covers construction.
@@ -79,7 +79,7 @@ Dispose of each line in `mutants.out/missed.txt` as one of three outcomes, in th
 
 Report survivors and their dispositions, not a score.
 A survivor that reveals an untested contract is the finding; a survivor on a configurable value is one line.
-Do not add a test that pins a message or a value only to kill a mutant; test the diagnostic, the error behavior, or the source chain when it is itself a requirement.
+Do not add a test that pins incidental wording or a configurable value only to kill a mutant; test the diagnostic facts, the error behavior, or the source chain, which are requirements.
 Exclude a test double from the pass with `exclude_re` in `.cargo/mutants.toml` when its own tests show that it can both accept and reject.
 Mutation testing does not substitute for Miri, sanitizers, or fuzzing on the paths those cover.
 
@@ -119,6 +119,7 @@ Does not apply to a local run that nobody cites.
 
 Report a check as passed only when execution evidence shows that result.
 Report these outcomes separately: passed, failed, errored, timed out, skipped, and not run.
+For a check with no pass criterion of its own, such as a mutation pass, report the tool's result and the maintainer's disposition of it as two separate statements; do not fold the disposition into a pass.
 Errored means the check could not start or crashed before it produced a verdict.
 Skipped is never reported as passed.
 Not run is never reported as passed, and a not-applicable check names the reason.
@@ -187,8 +188,9 @@ Run the targets on each CPU architecture and target-feature set where the code h
 
 ### Limits
 
-A fuzz run establishes that no input in the persisted corpus and none found within its budget violated the asserted properties.
-It does not establish the absence of such inputs, and it says nothing about properties the target does not assert or hardware it did not run on.
+A fuzz run establishes that no input it actually exercised violated the asserted properties.
+A short run may not have replayed the whole persisted corpus, which is why the report states the executions and the corpus coverage.
+It does not establish the absence of violating inputs, and it says nothing about properties the target does not assert or hardware it did not run on.
 
 The [trust-boundary example](../examples/trust-boundary/) includes one target with a seed corpus.
 Its nightly CI job builds the target and runs it for 30 seconds on x86_64.

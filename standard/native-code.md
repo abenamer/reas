@@ -94,7 +94,7 @@ The project's own crates form the shrink-only baseline, committed to the reposit
 Hold unsafe only in allowlisted modules; unsafe outside the allowlist fails the build.
 Dependency counts are reported on every run and compared with the previous run.
 A change in a dependency count is a review event that names the dependency and what moved; it is not a build failure, and it does not by itself mean a defect.
-A dependency whose count rises on a path that outside data reaches triggers the review in [REAS-SEC-001](security.md#reas-sec-001).
+A dependency whose count rises is a finding with a bounded response, as [REAS-SEC-001](security.md#reas-sec-001) specifies: a trusted `cargo vet` audit of the new version closes it, and your own review is needed only when no audit covers it and the dependency sits in a consequential component or on a path outside data reaches.
 
 The current enforcement is `cargo geiger`, which produces the per-crate count of unsafe items in a crate and its dependency graph.
 Run it in CI on each pull request and compare the result with the baseline.
@@ -212,8 +212,8 @@ The Miri-blind marks stay in all cases, because they tell the next reader where 
 
 ### Limits
 
-Miri establishes the absence of the undefined behavior it detects, on the paths it executed, with the inputs the tests supplied.
-It cannot execute FFI, vendor intrinsics, or inline assembly, and a sanitizer run establishes the same only for the hardware it ran on.
+Miri reports that it detected no instance of the undefined behavior it supports, on the paths it executed, with the inputs the tests supplied; that is not a general absence guarantee.
+It cannot execute FFI, vendor intrinsics, or inline assembly, and a sanitizer run reports the same, only for the hardware it ran on.
 
 ## Quality test
 

@@ -162,8 +162,8 @@ Add `--all-features` where that configuration is valid, `--no-default-features`,
 
 ### Limits
 
-Depth two establishes that no pair of features conflicts.
-It does not establish the absence of a three-way interaction; only a named combination or the full powerset finds one.
+Depth two establishes that the selected feature combinations compile.
+It does not establish that any feature interaction is correct, and it does not reach a three-way interaction; only a named combination, a test of the combined behavior, or the full powerset finds one.
 
 <a id="reas-data-005"></a>
 ## REAS-DATA-005: Make event consumers idempotent

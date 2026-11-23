@@ -25,7 +25,7 @@ The language review does not establish full ASD-STE100 compliance; see the [lang
 | `scripts/check.sh rust`: typestate example | Passed | check, 3 unit tests, 4 doctests, Clippy, rustfmt, doc build |
 | `scripts/check.sh rust`: trust-boundary example | Passed | check, 29 unit tests, 3 doctests, Clippy, rustfmt, doc build |
 | `scripts/check.sh rust`: fuzz crate Clippy and rustfmt | Passed | stable toolchain |
-| Mutation pass, trust-boundary example: `cargo mutants` | Passed | 69 mutants in 21 s: 52 killed, 16 unviable, 1 accepted survivor (`MAX_PAYLOAD_LEN`, non-contractual configuration, noted at the constant). The test double is excluded by `.cargo/mutants.toml`; its acceptance and rejection paths have their own tests. |
+| Mutation pass, trust-boundary example: `cargo mutants` | Completed; no pass criterion | Tool result: 69 mutants in 21 s, 52 killed, 16 unviable, 1 missed (`MAX_PAYLOAD_LEN`, `*` replaced with `+`). Maintainer disposition: the missed mutant is an accepted survivor, non-contractual configuration, noted at the constant. The test double is excluded by `.cargo/mutants.toml`; its acceptance and rejection paths have their own tests. |
 | `scripts/check.sh nightly`: expected diagnostic codes and the 30-second fuzz run | Passed in CI | run 33, `nightly-doctests` job; not run locally this revision |
 | MSRV `cargo +1.88.0 check` | Passed in CI | run 33, `msrv` job; not run locally this revision |
 | Differential tests on aarch64 | Passed in CI | run 33, `rust-examples-arm64` job; no aarch64 machine locally |

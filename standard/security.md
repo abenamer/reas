@@ -56,6 +56,7 @@ A dependency with a build script or a proc-macro runs code on the build machine.
 Use `cargo vet` with imported audit sets from organizations you name in `supply-chain/config.toml`, and run `cargo vet check` in CI.
 An imported audit stands in for your own review when its criteria cover what the dependency does in your build, when its source is one you have chosen to trust and recorded, and when it covers the exact version resolved.
 Review yourself, and record it with `cargo vet certify`, only a build script or proc-macro that no trusted audit covers, and any advisory or audit finding that remains unresolved.
+Handle a rise in a dependency's unsafe count, reported by [REAS-NATIVE-002](native-code.md#reas-native-002), the same way: a trusted audit of the new version closes it; your own review is needed only when no audit covers it and the dependency sits in a consequential component or on a path outside data reaches.
 Prefer a version published more than a few days ago; flag a version published within days of the change for operator review.
 `cargo geiger` counts unsafe items; it does not review them. [REAS-NATIVE-002](native-code.md#reas-native-002) owns the count and reports dependency changes.
 Document the project's own unsafe code as [REAS-SEC-004](#reas-sec-004) specifies, and treat every crossing into native code as [Native code](native-code.md) specifies.
@@ -115,7 +116,9 @@ All safe public construction paths must preserve the invariant, as [REAS-RUST-00
 
 Report a validation failure at two levels.
 The caller receives what failed and what a valid value looks like, with no internal detail.
-The log receives the rule, the rejected value after [REAS-SEC-006](#reas-sec-006) encoding, and the request context, including an identifier that connects the log line to the operation that produced it, so that a person troubleshooting starts at the boundary that refused the input.
+The log receives the rule that failed, the request context, and an identifier that connects the log line to the operation that produced it, so that a person troubleshooting starts at the boundary that refused the input.
+Log the rejected value only when it is not sensitive, and encode it for the log as [REAS-SEC-006](#reas-sec-006) specifies; redact or omit a secret, a credential, or personal data.
+Encoding makes a value safe for the log's syntax, not safe to disclose.
 For an authentication or authorization failure, the caller receives a generic message and a reference identifier; the log receives the detail.
 
 ### Verification

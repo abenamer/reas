@@ -12,6 +12,7 @@
 - Cut the self-audit to the current revision's evidence and one line per earlier revision, with run links kept.
 - The trust-boundary example gains a positive event-name test with a digit and an underscore, diagnostic and source-chain tests for its errors, an accepted-survivor note on the payload limit, and a mutation-testing configuration that excludes the test double.
 - Terminology gains accepted survivor, check, consequential component, decision code, failure path, finding, investigation, and mutant.
+- Review follow-up: encoding a value for a log is not redaction, so REAS-SEC-002 and REAS-FOUND-005 redact or omit sensitive values and keep the correlation identifier; a dependency unsafe-count rise has a bounded response shared by REAS-NATIVE-002 and REAS-SEC-001; a failed conditional update carries the identifier and expected version, and any stored value read afterward is labelled a snapshot; the Limits of fuzzing, Miri, and feature checks claim only what was exercised; the mutation row of the self-audit separates the tool result from the maintainer's disposition; tests assert diagnostic facts rather than incidental wording.
 
 ## 1.8.0-draft: 2026-11-22
 

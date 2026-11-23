@@ -882,19 +882,24 @@ mod tests {
 
     #[test]
     fn frame_error_names_the_sizes_a_person_needs() {
+        // The diagnostic facts are the requirement: both sizes appear. The
+        // wording is incidental and is not pinned (REAS-TEST-001).
         let err = FrameError::Truncated {
             expected: 20,
             actual: 12,
         };
-        assert_eq!(err.to_string(), "frame needs 20 bytes, got 12");
+        let message = err.to_string();
+        assert!(
+            message.contains("20") && message.contains("12"),
+            "{message}"
+        );
     }
 
     #[test]
     fn tag_mismatch_names_the_boundary() {
-        assert_eq!(
-            TagMismatch.to_string(),
-            "webhook tag does not match the payload"
-        );
+        // The requirement is that the message exists and names the tag.
+        let message = TagMismatch.to_string();
+        assert!(message.contains("tag"), "{message}");
     }
 
     #[test]
