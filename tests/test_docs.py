@@ -307,6 +307,25 @@ class RuleShapeTests(FixtureTests):
         self.assertEqual(validate(REPO), [])
 
 
+class LimitsSectionTests(FixtureTests):
+    def standard(self, body):
+        return self.fixture({'standard/rule.md': body})
+
+    def test_limits_is_accepted_after_verification(self):
+        body = STANDARD.replace('- Review question: how?\n', '- Review question: how?\n\n### Limits\n\nNot this.\n')
+        self.assertEqual(validate(self.standard(body), today=date(2026, 11, 20)), [])
+
+    def test_limits_before_verification_is_rejected(self):
+        body = STANDARD.replace('### Verification', '### Limits\n\nNot this.\n\n### Verification')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('Sections must be' in error for error in errors), errors)
+
+    def test_empty_limits_is_rejected(self):
+        body = STANDARD.replace('- Review question: how?\n', '- Review question: how?\n\n### Limits\n\n')
+        errors = validate(self.standard(body), today=date(2026, 11, 20))
+        self.assertTrue(any('Limits section is empty' in error for error in errors), errors)
+
+
 class RetiredTermTests(FixtureTests):
     def bundle(self, extra=None):
         files = {'standard/terminology.md': TERMINOLOGY}

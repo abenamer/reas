@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.9.0-draft: 2026-11-22
+
+- Stated the purpose of REAS: an instrument gauge, not the black box. The README opens with it, Foundations makes it authoritative, and CLAUDE.md and AGENTS.md make it operational: a routine pass needs its outcome and evidence reference; a finding needs what failed, why it matters, how sure the evidence is, whether it needs intervention, and what remains uncertain; a possible investigation is a recommendation to the maintainer.
+- Added REAS-FOUND-004, apply by property and scale by consequence: a system's properties decide which checks apply; the consequence of a failure, judged at the component with a one-sentence failure path, decides how much effort each check gets. Added REAS-FOUND-005, a check is not an investigation, including the diagnostic context a finding carries so that troubleshooting starts above the bottom.
+- REAS-TEST-003 keeps corpus persistence wherever fuzzing applies and one pull-request budget as the baseline check; longer campaigns are recorded decisions for consequential components. Fixed the round-trip assertion for canonicalizing parsers.
+- REAS-TEST-001 makes mutation testing Required for decision code in consequential components and Advisory elsewhere, with three survivor dispositions: killed, equivalent, and accepted survivor for non-contractual configuration. Survivors are reported, not scores. Added the four questions a reviewer must be able to answer about any test.
+- REAS-SEC-001 narrows manual dependency review to build-time code that no trusted `cargo vet` audit covers and to unresolved findings. REAS-NATIVE-002 keeps two unsafe counts: first-party as the shrink-only baseline, dependencies as review events. REAS-DATA-004 bounds the feature powerset to depth two with declared incompatible features.
+- REAS-RUST-005, REAS-STATE-003, and REAS-SEC-002 name the diagnostic context an error carries: operation, expected and observed condition, source chain, record identifier and versions, and a correlation identifier in the log.
+- Added an optional Limits section to the rule shape, enforced by the checker, and wrote it for the six checks a passing result most misrepresents.
+- Cut the self-audit to the current revision's evidence and one line per earlier revision, with run links kept.
+- The trust-boundary example gains a positive event-name test with a digit and an underscore, diagnostic and source-chain tests for its errors, an accepted-survivor note on the payload limit, and a mutation-testing configuration that excludes the test double.
+- Terminology gains accepted survivor, check, consequential component, decision code, failure path, finding, investigation, and mutant.
+- Review follow-up: encoding a value for a log is not redaction, so REAS-SEC-002 and REAS-FOUND-005 redact or omit sensitive values and keep the correlation identifier; a dependency unsafe-count rise has a bounded response shared by REAS-NATIVE-002 and REAS-SEC-001; a failed conditional update carries the identifier and expected version, and any stored value read afterward is labelled a snapshot; the Limits of fuzzing, Miri, and feature checks claim only what was exercised; the mutation row of the self-audit separates the tool result from the maintainer's disposition; tests assert diagnostic facts rather than incidental wording.
+
 ## 1.8.0-draft: 2026-11-22
 
 - Added [Foundations](standard/foundations.md) and the `REAS-FOUND` family. The concept opens by acknowledging that AI-assisted development changed the economics of writing software for the better, so the standard raises its floor for early-stage work and holds its ceiling: no exception for a first version, and no structure added because it is cheap to generate.

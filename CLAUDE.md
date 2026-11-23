@@ -27,6 +27,15 @@ Each rule states its Intent, Enforcement, Scope, Rules, and Verification; read t
 - Do not claim passing tests or full language compliance without evidence.
 - Do not defer engineering that is cheap to do now, and do not add structure because it is cheap to generate; see [REAS-FOUND-001](standard/foundations.md#reas-found-001).
 
+## Report as an instrument gauge
+
+- A routine pass: its outcome and its evidence reference, nothing more.
+- A finding: what changed or failed, why it matters, how sure the evidence is, whether it needs intervention, and what remains uncertain, in a few sentences.
+- A possible need for deeper work: a recommendation to the maintainer, not work you start. Bounded diagnostics needed to finish the authorized task, such as reproducing a failing test, are not an investigation.
+- Logs, test output, and analysis: kept in the repository or the run, referenced, not reproduced.
+- Never conceal a finding or report an incomplete check as a pass.
+- Propose a component's failure path under [REAS-FOUND-004](standard/foundations.md#reas-found-004); do not record or lower its consequence.
+
 ## Stop and ask
 
 - When three consecutive approaches do not make a failing check pass, stop and report what you tried.
